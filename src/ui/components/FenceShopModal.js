@@ -40,7 +40,7 @@ export class FenceShopModal {
       <div class="modal-card shop-card">
         <div class="modal-header">
           <h2>🕵️ THE FENCE — BLACK MARKET</h2>
-          <button class="close-btn" id="closeShopBtn">✕ [ESC]</button>
+          <button class="close-btn" id="closeShopBtn" aria-label="Close Fence Shop">✕ [ESC]</button>
         </div>
         <p class="modal-subtitle">EXCHANGE HEIST CHIPS FOR SURVIVAL GEAR — PRESS [1], [2], [3], [4] TO BUY</p>
         
@@ -62,11 +62,12 @@ export class FenceShopModal {
     });
 
     document.getElementById('closeShopBtn').addEventListener('click', () => this.close());
-    window.addEventListener('keydown', this.keyListener);
   }
 
   open() {
+    if (this.isOpen) return;
     this.isOpen = true;
+    window.addEventListener('keydown', this.keyListener);
     this.container.style.display = 'flex';
     this.container.classList.remove('hidden');
     this.renderItems();
@@ -84,7 +85,7 @@ export class FenceShopModal {
           <h4><span class="key-badge">[${idx + 1}]</span> ${item.name}</h4>
           <p>${item.desc}</p>
         </div>
-        <button class="buy-btn" data-id="${item.id}" data-cost="${item.cost}">
+        <button class="buy-btn" data-id="${item.id}" data-cost="${item.cost}" aria-label="Buy ${item.name}">
           BUY [${idx + 1}] (${item.cost} 🪙)
         </button>
       </div>
@@ -120,7 +121,9 @@ export class FenceShopModal {
   }
 
   close() {
+    if (!this.isOpen) return;
     this.isOpen = false;
+    window.removeEventListener('keydown', this.keyListener);
     this.container.style.display = 'none';
     this.container.classList.add('hidden');
   }
