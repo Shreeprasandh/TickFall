@@ -458,6 +458,16 @@ body, html {
   margin: 0 auto;
 }
 
+#btnSoloMode,
+#btnMultiplayerMode {
+  opacity: 0.85;
+}
+
+#btnSoloMode:hover,
+#btnMultiplayerMode:hover {
+  opacity: 1;
+}
+
 /* Modals */
 .modal-overlay {
   position: fixed;

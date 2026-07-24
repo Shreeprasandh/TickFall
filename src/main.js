@@ -23,6 +23,7 @@ const initApp = () => {
   const fenceShopModal = new FenceShopModal();
   const mobileControls = new MobileControls('mobileOverlay');
   const uiManager = new UIManager();
+  window.uiManager = uiManager;
 
   // Initialize Main Game Engine Loop
   const gameEngine = new GameEngine(leftCanvas, rightCanvas);
@@ -38,8 +39,6 @@ const initApp = () => {
   window.addEventListener('click', unlockLobbyAudio);
   window.addEventListener('keydown', unlockLobbyAudio);
   window.addEventListener('pointerdown', unlockLobbyAudio);
-
-  console.log('⏱️ TickFall — Living Engine & Audio Initialized Successfully!');
 };
 
 // Robust Module Bootstrap (Immediate execution if DOM already parsed)

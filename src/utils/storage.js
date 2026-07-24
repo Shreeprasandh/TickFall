@@ -31,7 +31,8 @@ const DEFAULT_SAVE = {
     particles: true,
     leftHandedMobile: false
   },
-  unlockedAchievements: []
+  unlockedAchievements: [],
+  soloLeaderboard: []
 };
 
 export class StorageManager {
@@ -39,7 +40,14 @@ export class StorageManager {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (!data) return DEFAULT_SAVE;
-      return { ...DEFAULT_SAVE, ...JSON.parse(data) };
+      const parsed = JSON.parse(data);
+      return {
+        ...DEFAULT_SAVE,
+        ...parsed,
+        stats: { ...DEFAULT_SAVE.stats, ...(parsed.stats || {}) },
+        equippedCosmetics: { ...DEFAULT_SAVE.equippedCosmetics, ...(parsed.equippedCosmetics || {}) },
+        settings: { ...DEFAULT_SAVE.settings, ...(parsed.settings || {}) }
+      };
     } catch (e) {
       console.warn('Failed to load save data, using default:', e);
       return DEFAULT_SAVE;

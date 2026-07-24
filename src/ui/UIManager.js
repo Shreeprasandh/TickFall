@@ -247,6 +247,15 @@ export class UIManager {
       modal.style.display = 'flex';
       modal.classList.remove('hidden');
     }
+    try {
+      if (modalId === 'leaderboardModal') {
+        this.renderLeaderboard();
+      } else if (modalId === 'profileModal') {
+        this.renderProfileValues();
+      }
+    } catch (e) {
+      console.error('Error rendering modal content:', e);
+    }
   }
 
   closeModal(modalId) {
@@ -261,10 +270,16 @@ export class UIManager {
     const tbody = document.getElementById('leaderboardTbody');
     if (!tbody) return;
 
-    const records = StorageManager.getSoloLeaderboard();
+    const records = StorageManager.getSoloLeaderboard() || [];
+    if (records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; opacity:0.6;">No recorded missions yet.</td></tr>`;
+      return;
+    }
+
     tbody.innerHTML = records.map((rec, index) => {
-      const mins = Math.floor(rec.timeSeconds / 60);
-      const secs = (rec.timeSeconds % 60).toFixed(2);
+      const timeVal = (rec && typeof rec.timeSeconds === 'number' && !isNaN(rec.timeSeconds)) ? rec.timeSeconds : 0;
+      const mins = Math.floor(timeVal / 60);
+      const secs = (timeVal % 60).toFixed(2);
       const timeStr = `${mins}:${secs.padStart(5, '0')}s`;
       const rankStr = index === 0 ? '🥇 #1' : index === 1 ? '🥈 #2' : index === 2 ? '🥉 #3' : `#${index + 1}`;
       const roleBadge = rec.role === 'THIEF' 
@@ -274,7 +289,7 @@ export class UIManager {
       return `
         <tr>
           <td class="rank-badge">${rankStr}</td>
-          <td><strong>${rec.name}</strong></td>
+          <td><strong>${rec?.name || 'UNKNOWN'}</strong></td>
           <td>${roleBadge}</td>
           <td class="time-highlight">${timeStr}</td>
         </tr>

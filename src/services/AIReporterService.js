@@ -46,7 +46,8 @@ Respond STRICTLY in valid JSON format with three fields:
       const data = await response.json();
       const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (textResponse) {
-        return JSON.parse(textResponse);
+        const cleanedText = textResponse.replace(/```json|```/g, '').trim();
+        return JSON.parse(cleanedText);
       }
     } catch (err) {
       console.error('Failed to generate AI Heist Story:', err);

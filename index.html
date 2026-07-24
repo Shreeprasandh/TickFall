@@ -48,7 +48,7 @@
         </div>
         <span class="goal-indicator">DESCENT — FL 40 → 1</span>
       </div>
-      <canvas id="leftCanvas" width="480" height="720"></canvas>
+      <canvas id="leftCanvas" width="480" height="720" role="img" aria-label="Cipher Operative split screen view"></canvas>
     </div>
 
     <!-- CENTER CHRONOMETER DIVIDER -->
@@ -64,7 +64,7 @@
         </div>
         <span class="goal-indicator">PURSUIT — FL 1 → 40</span>
       </div>
-      <canvas id="rightCanvas" width="480" height="720"></canvas>
+      <canvas id="rightCanvas" width="480" height="720" role="img" aria-label="Vale Inspector split screen view"></canvas>
     </div>
 
     <!-- Mobile Virtual Touch Controls -->
@@ -76,7 +76,7 @@
     
     <!-- HOME SCREEN -->
     <div id="homeScreen" class="screen home-screen">
-      <canvas id="lobbyBgCanvas"></canvas>
+      <canvas id="lobbyBgCanvas" role="img" aria-label="Animated lobby background"></canvas>
 
       <!-- Top-Right Controls -->
       <div class="top-right-controls">
@@ -190,7 +190,7 @@
           <button id="btnMultiplayerMode" class="btn btn-secondary">
             MULTIPLAYER MISSION
           </button>
-          <button id="btnOpenLeaderboard" class="text-link-btn sub-menu-text-link">
+          <button id="btnOpenLeaderboard" class="text-link-btn sub-menu-text-link" onclick="window.openModal('leaderboardModal')" aria-haspopup="dialog" aria-controls="leaderboardModal">
             LEADERBOARD
           </button>
         </div>
@@ -384,8 +384,8 @@
       <div class="spacious-content">
         <!-- Alias Editing -->
         <div class="dossier-section">
-          <label class="section-label">OPERATIVE ALIAS</label>
-          <input type="text" id="operativeNameInput" class="form-input" value="OPERATIVE_40" maxlength="20">
+          <label class="section-label" for="operativeNameInput">OPERATIVE ALIAS</label>
+          <input type="text" id="operativeNameInput" class="form-input" value="OPERATIVE_40" maxlength="20" aria-label="Operative Alias">
         </div>
 
         <!-- Career Statistics -->
@@ -415,12 +415,12 @@
         <div class="dossier-section">
           <label class="section-label">AUDIO PREFERENCES</label>
           <div class="setting-row">
-            <label>SFX VOLUME</label>
-            <input type="range" id="soundSlider" min="0" max="100" value="80">
+            <label for="soundSlider">SFX VOLUME</label>
+            <input type="range" id="soundSlider" min="0" max="100" value="80" aria-label="Sound Effects Volume">
           </div>
           <div class="setting-row">
-            <label>SYNTH MUSIC VOLUME</label>
-            <input type="range" id="musicSlider" min="0" max="100" value="70">
+            <label for="musicSlider">SYNTH MUSIC VOLUME</label>
+            <input type="range" id="musicSlider" min="0" max="100" value="70" aria-label="Synthesizer Music Volume">
           </div>
         </div>
       </div>
@@ -450,7 +450,36 @@
               </tr>
             </thead>
             <tbody id="leaderboardTbody">
-              <!-- Dynamically rendered by UIManager -->
+              <tr>
+                <td class="rank-badge">🥇 #1</td>
+                <td><strong>CIPHER_ALPHA</strong></td>
+                <td><span class="badge-role">CIPHER</span></td>
+                <td class="time-highlight">0:34.12s</td>
+              </tr>
+              <tr>
+                <td class="rank-badge">🥈 #2</td>
+                <td><strong>INSPECTOR_VALE</strong></td>
+                <td><span class="badge-role gold">VALE</span></td>
+                <td class="time-highlight">0:36.85s</td>
+              </tr>
+              <tr>
+                <td class="rank-badge">🥉 #3</td>
+                <td><strong>SHADOW_CIPHER</strong></td>
+                <td><span class="badge-role">CIPHER</span></td>
+                <td class="time-highlight">0:41.20s</td>
+              </tr>
+              <tr>
+                <td class="rank-badge">#4</td>
+                <td><strong>AGENT_K</strong></td>
+                <td><span class="badge-role gold">VALE</span></td>
+                <td class="time-highlight">0:43.65s</td>
+              </tr>
+              <tr>
+                <td class="rank-badge">#5</td>
+                <td><strong>GHOST_RUNNER</strong></td>
+                <td><span class="badge-role">CIPHER</span></td>
+                <td class="time-highlight">0:45.10s</td>
+              </tr>
             </tbody>
           </table>
         </div>
