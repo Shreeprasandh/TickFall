@@ -36,17 +36,50 @@ export class InputManager {
     });
   }
 
-  update() {
-    // Thief Keyboard Mapping (WASD + Q/E + Space)
+  update(playerRole = 'THIEF', mode = 'SOLO') {
     const k = this.keys;
-    this.thiefInputs.left = k['KeyA'] || false;
-    this.thiefInputs.right = k['KeyD'] || false;
-    this.thiefInputs.jump = k['KeyW'] || k['Space'] || false;
-    this.thiefInputs.stomp = k['KeyS'] || false;
-    this.thiefInputs.interact = k['KeyE'] || false;
-    this.thiefInputs.ability = k['KeyQ'] || false;
 
-    // Merge Touch for Thief
+    const leftPressed = k['KeyA'] || k['ArrowLeft'] || false;
+    const rightPressed = k['KeyD'] || k['ArrowRight'] || false;
+    const jumpPressed = k['KeyW'] || k['Space'] || k['ArrowUp'] || false;
+    const downPressed = k['KeyS'] || k['ArrowDown'] || false;
+    const interactPressed = k['KeyE'] || k['Enter'] || k['Slash'] || false;
+    const abilityPressed = k['KeyQ'] || k['ShiftLeft'] || k['ShiftRight'] || false;
+
+    if (mode === 'SOLO') {
+      if (playerRole === 'THIEF') {
+        this.thiefInputs.left = leftPressed;
+        this.thiefInputs.right = rightPressed;
+        this.thiefInputs.jump = jumpPressed;
+        this.thiefInputs.stomp = downPressed;
+        this.thiefInputs.interact = interactPressed;
+        this.thiefInputs.ability = abilityPressed;
+      } else {
+        this.detectiveInputs.left = leftPressed;
+        this.detectiveInputs.right = rightPressed;
+        this.detectiveInputs.jump = jumpPressed;
+        this.detectiveInputs.slide = downPressed;
+        this.detectiveInputs.interact = interactPressed;
+        this.detectiveInputs.ability = abilityPressed;
+      }
+    } else {
+      // 1v1 Split Screen Multiplayer Mode (P1 Left WASD vs P2 Right Arrows)
+      this.thiefInputs.left = k['KeyA'] || false;
+      this.thiefInputs.right = k['KeyD'] || false;
+      this.thiefInputs.jump = k['KeyW'] || k['Space'] || false;
+      this.thiefInputs.stomp = k['KeyS'] || false;
+      this.thiefInputs.interact = k['KeyE'] || false;
+      this.thiefInputs.ability = k['KeyQ'] || false;
+
+      this.detectiveInputs.left = k['ArrowLeft'] || false;
+      this.detectiveInputs.right = k['ArrowRight'] || false;
+      this.detectiveInputs.jump = k['ArrowUp'] || false;
+      this.detectiveInputs.slide = k['ArrowDown'] || false;
+      this.detectiveInputs.interact = k['Enter'] || k['Slash'] || false;
+      this.detectiveInputs.ability = k['ShiftLeft'] || k['ShiftRight'] || false;
+    }
+
+    // Merge Touch Inputs
     if (this.touchState.thief.dx < -0.3) this.thiefInputs.left = true;
     if (this.touchState.thief.dx > 0.3) this.thiefInputs.right = true;
     if (this.touchState.thief.jump) this.thiefInputs.jump = true;
@@ -54,15 +87,6 @@ export class InputManager {
     if (this.touchState.thief.interact) this.thiefInputs.interact = true;
     if (this.touchState.thief.ability) this.thiefInputs.ability = true;
 
-    // Detective Keyboard Mapping (Arrow Keys + Shift/Enter//)
-    this.detectiveInputs.left = k['ArrowLeft'] || false;
-    this.detectiveInputs.right = k['ArrowRight'] || false;
-    this.detectiveInputs.jump = k['ArrowUp'] || false;
-    this.detectiveInputs.slide = k['ArrowDown'] || false;
-    this.detectiveInputs.interact = k['Enter'] || k['Slash'] || false;
-    this.detectiveInputs.ability = k['ShiftLeft'] || k['ShiftRight'] || false;
-
-    // Merge Touch for Detective
     if (this.touchState.detective.dx < -0.3) this.detectiveInputs.left = true;
     if (this.touchState.detective.dx > 0.3) this.detectiveInputs.right = true;
     if (this.touchState.detective.jump) this.detectiveInputs.jump = true;

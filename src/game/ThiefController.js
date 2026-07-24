@@ -25,9 +25,21 @@ export class ThiefController {
     this.currentFloorIndex = 40;
     this.active = true;
     this.hasDiamond = true;
+    this.stealthTimer = 0;
+    this.abilityCooldown = 0;
   }
 
   update(inputs) {
+    if (this.abilityCooldown > 0) this.abilityCooldown -= 1 / 60;
+    if (this.stealthTimer > 0) this.stealthTimer -= 1 / 60;
+
+    if (inputs.ability && this.abilityCooldown <= 0) {
+      this.stealthTimer = 3.5;
+      this.abilityCooldown = 8.0;
+    }
+
+    const currentSpeed = this.stealthTimer > 0 ? THIEF_SPEED * 1.5 : THIEF_SPEED;
+
     if (this.isStunned) {
       this.stunTimer -= 1 / 60;
       if (this.stunTimer <= 0) {
@@ -38,10 +50,10 @@ export class ThiefController {
     }
 
     if (inputs.left) {
-      this.vx = -THIEF_SPEED;
+      this.vx = -currentSpeed;
       this.facing = 'LEFT';
     } else if (inputs.right) {
-      this.vx = THIEF_SPEED;
+      this.vx = currentSpeed;
       this.facing = 'RIGHT';
     } else {
       this.vx *= 0.7;

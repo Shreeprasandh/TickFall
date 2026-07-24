@@ -132,6 +132,35 @@ export class AudioManager {
     if (this.musicInterval) clearTimeout(this.musicInterval);
   }
 
+  playVictoryFanfare(winner = 'THIEF') {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // Arpeggiated Victory Chords
+    const chord = winner === 'THIEF' 
+      ? [293.66, 369.99, 440.00, 587.33, 739.99] // D major triumph
+      : [220.00, 277.18, 329.63, 440.00, 554.37]; // A major triumph
+
+    chord.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.setValueAtTime(0.3 * this.musicVolume, now + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 1.2);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + 1.25);
+    });
+  }
+
   setIntensity(percentRemaining) {
     // percentRemaining: 1.0 (start) down to 0 (critical)
     this.intensity = clamp(1.0 - percentRemaining, 0, 1);

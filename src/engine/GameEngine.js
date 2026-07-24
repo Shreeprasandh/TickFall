@@ -64,9 +64,14 @@ export class GameEngine {
     });
 
     events.on('game:over', (data) => {
-      this.gameState = GAME_STATES.RESULTS;
+      this.cutsceneData = data;
+      this.cutsceneTimer = 0;
+      this.cutsceneDuration = 2.5;
+      this.gameState = GAME_STATES.CUTSCENE;
       audioManager.stopMusic();
-      StorageManager.recordMatchResult(data.winner, this.timerSystem.elapsedSeconds, this.thief.chips + this.detective.chips);
+      audioManager.playVictoryFanfare(data.winner);
+      this.leftParticles.emit(240, 360, 40);
+      this.rightParticles.emit(240, 360, 40);
     });
 
     events.on('input:pause', (data) => {
@@ -192,13 +197,29 @@ export class GameEngine {
         this.update(dt);
       }
       this.render();
+    } else if (this.gameState === GAME_STATES.CUTSCENE) {
+      this.cutsceneTimer += dt;
+      const progress = Math.min(1.0, this.cutsceneTimer / this.cutsceneDuration);
+      
+      this.update(dt * 0.15); // Smooth slow-motion physics update
+      this.render();
+      this.renderer.renderCutsceneOverlays(this.cutsceneData, progress);
+
+      if (this.cutsceneTimer >= this.cutsceneDuration) {
+        this.cutsceneTimer = this.cutsceneDuration;
+        this.gameState = GAME_STATES.RESULTS;
+        StorageManager.recordMatchResult(this.cutsceneData.winner, this.timerSystem.elapsedSeconds, this.thief.chips + this.detective.chips);
+        if (window.uiManager) window.uiManager.switchScreen(GAME_STATES.RESULTS);
+      }
+    } else if (this.gameState === GAME_STATES.RESULTS) {
+      this.render(); // Keep rendering canvas background under results modal so screen never freezes!
     }
 
     requestAnimationFrame((t) => this.loop(t));
   }
 
   update(dt) {
-    inputManager.update();
+    inputManager.update(this.playerRole, this.mode);
 
     // 1. Process Thief Inputs & AI
     let thiefInputs = inputManager.thiefInputs;

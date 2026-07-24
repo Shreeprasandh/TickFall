@@ -80,8 +80,15 @@ export class UIManager {
     // Initial Audio Mute Icon Sync Across All Buttons (Default Muted)
     this.updateAllMuteIcons(audioManager.isMuted);
 
-    // Global Event Delegation for all Mute Toggle Buttons
+    // Global Event Delegation for Mute & Pause Control Buttons
     document.addEventListener('click', (e) => {
+      const pauseBtn = e.target.closest('.btn-pause-toggle, #btnPauseGameClock');
+      if (pauseBtn) {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        if (window.gameEngine) window.gameEngine.togglePause(this.selectedRole || 'THIEF');
+      }
+
       const muteBtn = e.target.closest('.btn-mute-toggle, #btnMuteAudio, #btnMuteAudioClock');
       if (muteBtn) {
         e.stopPropagation();

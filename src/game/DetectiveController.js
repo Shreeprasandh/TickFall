@@ -23,9 +23,19 @@ export class DetectiveController {
     this.currentFloorIndex = 1;
     this.active = true;
     this.bombDiffused = false;
+    this.radarPulseTimer = 0;
+    this.abilityCooldown = 0;
   }
 
   update(inputs) {
+    if (this.abilityCooldown > 0) this.abilityCooldown -= 1 / 60;
+    if (this.radarPulseTimer > 0) this.radarPulseTimer -= 1 / 60;
+
+    if (inputs.ability && this.abilityCooldown <= 0) {
+      this.radarPulseTimer = 2.5;
+      this.abilityCooldown = 8.0;
+    }
+
     if (inputs.left) {
       this.vx = -DETECTIVE_SPEED;
       this.facing = 'LEFT';

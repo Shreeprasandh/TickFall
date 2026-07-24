@@ -13,6 +13,21 @@ export class FenceShopModal {
       { id: 'smoke', name: 'Smoke Bomb', cost: 12, icon: '💨', desc: 'Become completely invisible to radar for 5 seconds' },
       { id: 'heal', name: 'First Aid Kit', cost: 6, icon: '🩹', desc: 'Restore +1 HP instantly' }
     ];
+    this.isOpen = false;
+    this.keyListener = (e) => {
+      if (!this.isOpen) return;
+      if (e.code === 'Digit1' || e.code === 'Numpad1') {
+        this.buyItem('jammer', 8);
+      } else if (e.code === 'Digit2' || e.code === 'Numpad2') {
+        this.buyItem('crowbar', 10);
+      } else if (e.code === 'Digit3' || e.code === 'Numpad3') {
+        this.buyItem('smoke', 12);
+      } else if (e.code === 'Digit4' || e.code === 'Numpad4') {
+        this.buyItem('heal', 6);
+      } else if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'KeyQ') {
+        this.close();
+      }
+    };
     this.createHTML();
     this.initEvents();
   }
@@ -25,14 +40,15 @@ export class FenceShopModal {
       <div class="modal-card shop-card">
         <div class="modal-header">
           <h2>🕵️ THE FENCE — BLACK MARKET</h2>
-          <button class="close-btn" id="closeShopBtn">✕</button>
+          <button class="close-btn" id="closeShopBtn">✕ [ESC]</button>
         </div>
-        <p class="modal-subtitle">EXCHANGE HEIST CHIPS FOR SINGLE-USE SURVIVAL GEAR</p>
+        <p class="modal-subtitle">EXCHANGE HEIST CHIPS FOR SURVIVAL GEAR — PRESS [1], [2], [3], [4] TO BUY</p>
         
         <div class="shop-items-grid" id="shopItemsGrid"></div>
         
         <div class="shop-footer">
           <span>YOUR CHIPS: <strong id="shopChipCount">0</strong> 🪙</span>
+          <span class="shop-hotkey-hint">PRESS <strong>1-4</strong> TO BUY | <strong>ESC</strong> TO EXIT</span>
         </div>
       </div>
     `;
@@ -46,9 +62,12 @@ export class FenceShopModal {
     });
 
     document.getElementById('closeShopBtn').addEventListener('click', () => this.close());
+    window.addEventListener('keydown', this.keyListener);
   }
 
   open() {
+    this.isOpen = true;
+    this.container.style.display = 'flex';
     this.container.classList.remove('hidden');
     this.renderItems();
   }
@@ -58,15 +77,15 @@ export class FenceShopModal {
     const chipCountEl = document.getElementById('shopChipCount');
     if (chipCountEl) chipCountEl.innerText = window.gameEngine ? window.gameEngine.thief.chips : 0;
 
-    grid.innerHTML = this.items.map(item => `
+    grid.innerHTML = this.items.map((item, idx) => `
       <div class="shop-item-card">
         <div class="item-icon">${item.icon}</div>
         <div class="item-info">
-          <h4>${item.name}</h4>
+          <h4><span class="key-badge">[${idx + 1}]</span> ${item.name}</h4>
           <p>${item.desc}</p>
         </div>
         <button class="buy-btn" data-id="${item.id}" data-cost="${item.cost}">
-          BUY (${item.cost} 🪙)
+          BUY [${idx + 1}] (${item.cost} 🪙)
         </button>
       </div>
     `).join('');
@@ -101,6 +120,8 @@ export class FenceShopModal {
   }
 
   close() {
+    this.isOpen = false;
+    this.container.style.display = 'none';
     this.container.classList.add('hidden');
   }
 }

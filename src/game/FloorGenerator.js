@@ -26,18 +26,31 @@ export class FloorGenerator {
       const themeSpec = FLOOR_THEME_SPECS[themeName] || FLOOR_THEME_SPECS['Office'];
 
       // Generate Floor Hole position (gap in floor platform)
-      const holeWidth = rng.range(80, 110);
-      const holeX = rng.range(WALL_THICKNESS + 10, BUILDING_WIDTH - WALL_THICKNESS - holeWidth - 10);
+      const holeWidth = rng.range(85, 115);
+      const holeX = rng.range(WALL_THICKNESS + 20, BUILDING_WIDTH - WALL_THICKNESS - holeWidth - 20);
+
+      const getValidX = (objWidth = 40) => {
+        let attempts = 0;
+        while (attempts < 25) {
+          const candX = rng.range(WALL_THICKNESS + 30, BUILDING_WIDTH - WALL_THICKNESS - objWidth - 30);
+          if (candX + objWidth < holeX - 25 || candX > holeX + holeWidth + 25) {
+            return candX;
+          }
+          attempts++;
+        }
+        return holeX < BUILDING_WIDTH / 2 ? BUILDING_WIDTH - WALL_THICKNESS - objWidth - 40 : WALL_THICKNESS + 40;
+      };
 
       // Objects array for this floor
       const objects = [];
 
       // Always spawn 'The Fence' NPC on floors 32, 24, 16, 8
       if (floorNumber % 8 === 0 && floorNumber !== 40 && floorNumber !== 0) {
+        const fenceX = getValidX(40);
         objects.push({
           id: `fence_${floorNumber}`,
           type: 'the_fence',
-          x: BUILDING_WIDTH / 2 - 20,
+          x: fenceX,
           y: (i + 1) * FLOOR_HEIGHT - 68,
           active: true
         });
@@ -45,50 +58,56 @@ export class FloorGenerator {
 
       // Always spawn Bomb Device on Floor 1
       if (floorNumber === 1) {
+        const bombX = getValidX(40);
         objects.push({
           id: 'bomb_device_1',
           type: 'bomb_device',
-          x: BUILDING_WIDTH / 2 - 28,
+          x: bombX,
           y: (i + 1) * FLOOR_HEIGHT - 60,
           active: true
         });
         // Also spawn Radio Station on Floor 1
+        const radioX = getValidX(40);
         objects.push({
           id: 'radio_1',
           type: 'radio_station',
-          x: WALL_THICKNESS + 30,
+          x: radioX,
           y: (i + 1) * FLOOR_HEIGHT - 48,
           active: true
         });
       }
 
-      // Always spawn Security Camera or Safe on random floors
-      if (themeSpec.objectTypes.includes('security_camera') && rng.next() < 0.6) {
+      // Spawn Security Camera on random floors (70% spawn rate)
+      if (themeSpec.objectTypes.includes('security_camera') || rng.next() < 0.55) {
         objects.push({
           id: `cam_${floorNumber}`,
           type: 'security_camera',
-          x: rng.choice([WALL_THICKNESS + 10, BUILDING_WIDTH - WALL_THICKNESS - 42]),
-          y: i * FLOOR_HEIGHT + 20,
+          x: rng.choice([WALL_THICKNESS + 15, BUILDING_WIDTH - WALL_THICKNESS - 45]),
+          y: i * FLOOR_HEIGHT + 18,
           active: true
         });
       }
 
-      if (themeSpec.objectTypes.includes('air_vent') && rng.next() < 0.4) {
-        objects.push({
-          id: `vent_${floorNumber}`,
-          type: 'air_vent',
-          x: rng.range(WALL_THICKNESS + 40, BUILDING_WIDTH - WALL_THICKNESS - 80),
-          y: (i + 1) * FLOOR_HEIGHT - 36,
-          active: true
-        });
-      }
-
-      if (themeSpec.objectTypes.includes('safe_vault') && rng.next() < 0.3) {
+      // Spawn Safe Vault on random floors (40% spawn rate)
+      if (themeSpec.objectTypes.includes('safe_vault') || rng.next() < 0.4) {
+        const safeX = getValidX(35);
         objects.push({
           id: `safe_${floorNumber}`,
           type: 'safe_vault',
-          x: rng.range(WALL_THICKNESS + 40, BUILDING_WIDTH - WALL_THICKNESS - 80),
+          x: safeX,
           y: (i + 1) * FLOOR_HEIGHT - 56,
+          active: true
+        });
+      }
+
+      // Spawn Radio Station on security & office floors
+      if ((floorNumber % 6 === 0 || themeName === 'Security Room') && floorNumber !== 1) {
+        const radioX = getValidX(40);
+        objects.push({
+          id: `radio_${floorNumber}`,
+          type: 'radio_station',
+          x: radioX,
+          y: (i + 1) * FLOOR_HEIGHT - 48,
           active: true
         });
       }
