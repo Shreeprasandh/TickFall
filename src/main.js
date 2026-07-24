@@ -1,15 +1,20 @@
-// Entry Point Bootstrap Module for THE HEIST CLOCK (TickFall)
+// Entry Point Bootstrap Module for TickFall
 
 import { GameEngine } from './engine/GameEngine.js';
 import { ClockDisplay } from './ui/components/ClockDisplay.js';
 import { BombPuzzleModal } from './ui/components/BombPuzzleModal.js';
 import { FenceShopModal } from './ui/components/FenceShopModal.js';
 import { MobileControls } from './ui/components/MobileControls.js';
+import { LobbyBackground } from './ui/LobbyBackground.js';
 import { UIManager } from './ui/UIManager.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+const initApp = () => {
   const leftCanvas = document.getElementById('leftCanvas');
   const rightCanvas = document.getElementById('rightCanvas');
+
+  // Initialize Living Lobby Background & Dynamic Cursor Trail
+  const lobbyBg = new LobbyBackground();
+  window.lobbyBg = lobbyBg;
 
   // Initialize Core UI & Modals
   const clockDisplay = new ClockDisplay('clockContainer');
@@ -22,5 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const gameEngine = new GameEngine(leftCanvas, rightCanvas);
   window.gameEngine = gameEngine;
 
-  console.log('⏱️ THE HEIST CLOCK — Engine Initialized Successfully!');
-});
+  console.log('⏱️ TickFall — Living Engine Initialized Successfully!');
+};
+
+// Robust Module Bootstrap (Immediate execution if DOM already parsed)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}

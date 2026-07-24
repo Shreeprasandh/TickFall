@@ -23,12 +23,12 @@
   padding: 0;
   user-select: none;
   -webkit-user-select: none;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
 body, html {
@@ -76,8 +76,10 @@ body, html {
 }
 
 .icon-control-btn.muted {
-  color: var(--crimson-muted);
-  border-color: var(--crimson-muted);
+  color: rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  opacity: 0.45 !important;
+  background: rgba(0, 0, 0, 0.2) !important;
 }
 
 .control-svg {
@@ -195,11 +197,50 @@ body, html {
   font-weight: 500;
 }
 
-canvas {
+.game-panel canvas {
   width: 100%;
   height: calc(100vh - 42px);
   object-fit: contain;
   background-color: #0C0E12;
+}
+
+#lobbyBgCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  z-index: 1;
+}
+
+/* Floating Controls (Z-Index 50 inside homeScreen) */
+.top-right-controls {
+  position: absolute;
+  top: clamp(12px, 2vh, 24px);
+  right: clamp(12px, 2vw, 24px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.bottom-left-controls {
+  position: absolute;
+  bottom: clamp(12px, 2vh, 24px);
+  left: clamp(12px, 2vw, 24px);
+  z-index: 50;
+  pointer-events: auto;
+}
+
+.bottom-right-controls {
+  position: absolute;
+  bottom: clamp(12px, 2vh, 24px);
+  right: clamp(12px, 2vw, 24px);
+  z-index: 50;
+  pointer-events: auto;
 }
 
 /* Center Central Chronometer */
@@ -279,8 +320,7 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(12, 14, 18, 0.92);
-  backdrop-filter: blur(8px);
+  background: transparent;
   pointer-events: auto;
 }
 
@@ -288,7 +328,8 @@ canvas {
 
 /* Home Screen */
 .home-screen {
-  background: linear-gradient(180deg, #10131A 0%, #07080B 100%);
+  background: transparent !important;
+  position: relative;
 }
 
 .hero-content {
@@ -298,6 +339,8 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 3;
 }
 
 .main-title {
@@ -324,48 +367,62 @@ canvas {
   margin: 0 auto 20px auto;
 }
 
-/* Center Profile Figure Button */
-.profile-figure-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
-  padding: 6px 16px 6px 10px;
+/* Redesigned Borderless 3D Thief Profile Emblem Button */
+.profile-3d-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   cursor: pointer;
   margin-bottom: 28px;
-  transition: all 0.2s ease;
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  will-change: transform;
+  transform-origin: center center;
+  box-shadow: none;
 }
 
-.profile-figure-btn:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: var(--gold-accent);
-  transform: translateY(-2px);
+.profile-3d-btn:hover {
+  background: transparent;
+  transform: translate3d(0, -4px, 0) scale(1.06);
 }
 
-.figure-avatar {
-  width: 32px;
-  height: 32px;
-  background: rgba(197, 160, 89, 0.12);
-  border: 1px solid var(--gold-accent);
-  border-radius: 50%;
+.thief-3d-emblem {
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.avatar-svg {
-  width: 18px;
-  height: 18px;
+.thief-3d-svg {
+  width: 56px;
+  height: 56px;
 }
 
-.figure-label {
+.profile-name-subtext {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.operative-alias-text {
   font-family: var(--font-sans);
-  font-size: clamp(10px, 1.2vw, 11px);
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--ivory-primary);
+  opacity: 0.65;
+}
+
+.profile-hint-lbl {
+  font-size: 9px;
   letter-spacing: 1.5px;
-  color: var(--text-primary);
+  color: var(--text-muted);
+  opacity: 0.5;
 }
 
 .menu-button-group {
@@ -378,7 +435,7 @@ canvas {
   margin: 0 auto;
 }
 
-/* Spacious Modals & Cards ("Spaced to feel the richness") */
+/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -386,7 +443,6 @@ canvas {
   width: 100vw;
   height: 100vh;
   background: rgba(8, 10, 14, 0.88);
-  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -408,7 +464,6 @@ canvas {
   flex-direction: column;
 }
 
-/* Single-Screen Story Card Constraint (No Scroll Needed!) */
 .single-screen-card {
   max-height: fit-content;
 }
@@ -730,7 +785,8 @@ canvas {
   .main-title {
     font-size: 32px;
   }
-  .profile-figure-btn {
+  .profile-3d-btn {
     margin-bottom: 16px;
+    padding: 8px 16px;
   }
 }

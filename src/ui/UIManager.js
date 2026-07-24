@@ -17,6 +17,10 @@ export class UIManager {
 
     this.aiReporter = new AIReporterService(getAIKey());
 
+    // Global Modal Functions
+    window.openModal = (id) => this.openModal(id);
+    window.closeModal = (id) => this.closeModal(id);
+
     this.initDOM();
     this.bindEvents();
   }
@@ -42,120 +46,168 @@ export class UIManager {
     }
   }
 
+  updateMuteIcon(btn, isMuted) {
+    if (!btn) return;
+    if (isMuted) {
+      // Greyed & Struck-out Mute Icon
+      btn.innerHTML = `
+        <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="1" y1="1" x2="23" y2="23" stroke-width="2"></line>
+          <path d="M9 9v6h2l5 4V5L11 9H9z"></path>
+          <path d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+        </svg>
+      `;
+    } else {
+      // Clean Active Speaker Icon
+      btn.innerHTML = `
+        <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      `;
+    }
+  }
+
   bindEvents() {
     // Audio Mute Toggle Button
     const muteBtn = document.getElementById('btnMuteAudio');
     if (muteBtn) {
-      muteBtn.addEventListener('click', () => {
+      muteBtn.onclick = () => {
         const isMuted = audioManager.toggleMute();
         muteBtn.classList.toggle('muted', isMuted);
-      });
+        this.updateMuteIcon(muteBtn, isMuted);
+      };
     }
 
     // Modal Triggers
-    document.getElementById('btnOpenInfo')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.safePlay(() => audioManager.playClick());
-      this.openModal('infoModal');
-    });
+    const btnInfo = document.getElementById('btnOpenInfo');
+    if (btnInfo) {
+      btnInfo.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        this.openModal('infoModal');
+      };
+    }
 
-    document.getElementById('btnOpenStory')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.safePlay(() => audioManager.playClick());
-      this.openModal('storyModal');
-    });
+    const btnStory = document.getElementById('btnOpenStory');
+    if (btnStory) {
+      btnStory.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        this.openModal('storyModal');
+      };
+    }
 
-    document.getElementById('btnOpenFeedback')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.safePlay(() => audioManager.playClick());
-      this.openModal('feedbackModal');
-    });
+    const btnFeedback = document.getElementById('btnOpenFeedback');
+    if (btnFeedback) {
+      btnFeedback.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        this.openModal('feedbackModal');
+      };
+    }
 
-    document.getElementById('btnOpenProfile')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.safePlay(() => audioManager.playClick());
-      this.renderProfileValues();
-      this.openModal('profileModal');
-    });
+    const btnProfile = document.getElementById('btnOpenProfile');
+    if (btnProfile) {
+      btnProfile.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        this.renderProfileValues();
+        this.openModal('profileModal');
+      };
+    }
 
     // Close buttons for modals
     document.querySelectorAll('.modal-close-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.onclick = (e) => {
         e.stopPropagation();
         this.safePlay(() => audioManager.playClick());
         const modalId = e.currentTarget.getAttribute('data-modal');
         if (modalId) this.closeModal(modalId);
-      });
+      };
     });
 
     // Feedback Submission
-    document.getElementById('btnSubmitFeedback')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.safePlay(() => audioManager.playCoin());
-      const input = document.getElementById('feedbackInput');
-      if (input) input.value = '';
-      alert('Thank you for your feedback! It has been recorded.');
-      this.closeModal('feedbackModal');
-    });
+    const btnSubmitFb = document.getElementById('btnSubmitFeedback');
+    if (btnSubmitFb) {
+      btnSubmitFb.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playCoin());
+        const input = document.getElementById('feedbackInput');
+        if (input) input.value = '';
+        alert('Thank you for your feedback! It has been recorded.');
+        this.closeModal('feedbackModal');
+      };
+    }
 
     // Solo Mode Flow
-    document.getElementById('btnSoloMode')?.addEventListener('click', () => {
-      this.safePlay(() => audioManager.playClick());
-      this.switchScreen(GAME_STATES.SOLO_SETUP);
-    });
+    const btnSolo = document.getElementById('btnSoloMode');
+    if (btnSolo) {
+      btnSolo.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        this.switchScreen(GAME_STATES.SOLO_SETUP);
+      };
+    }
 
     document.querySelectorAll('.btn-back').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.onclick = () => {
         this.safePlay(() => audioManager.playClick());
         this.switchScreen(GAME_STATES.HOME);
-      });
+      };
     });
 
     // Option Selectors
     document.querySelectorAll('.role-select-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.onclick = (e) => {
         this.safePlay(() => audioManager.playClick());
         document.querySelectorAll('.role-select-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
         this.selectedRole = e.currentTarget.getAttribute('data-role');
-      });
+      };
     });
 
     document.querySelectorAll('.diff-select-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.onclick = (e) => {
         this.safePlay(() => audioManager.playClick());
         document.querySelectorAll('.diff-select-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
         this.selectedDifficulty = e.currentTarget.getAttribute('data-diff');
-      });
+      };
     });
 
     document.querySelectorAll('.time-select-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.onclick = (e) => {
         this.safePlay(() => audioManager.playClick());
         document.querySelectorAll('.time-select-btn').forEach(b => b.classList.remove('active'));
         e.currentTarget.classList.add('active');
         this.selectedTimeFrame = e.currentTarget.getAttribute('data-frame');
-      });
+      };
     });
 
     // Start Solo Game
-    document.getElementById('btnStartSoloGame')?.addEventListener('click', () => {
-      this.safePlay(() => audioManager.playClick());
-      this.switchScreen(GAME_STATES.PLAYING);
-      if (window.gameEngine) {
-        window.gameEngine.startSoloGame(this.selectedRole, this.selectedDifficulty, this.selectedTimeFrame);
-      }
-    });
+    const btnStartGame = document.getElementById('btnStartSoloGame');
+    if (btnStartGame) {
+      btnStartGame.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        this.switchScreen(GAME_STATES.PLAYING);
+        if (window.gameEngine) {
+          window.gameEngine.startSoloGame(this.selectedRole, this.selectedDifficulty, this.selectedTimeFrame);
+        }
+      };
+    }
 
     // Results Play Again
-    document.getElementById('btnPlayAgain')?.addEventListener('click', () => {
-      this.safePlay(() => audioManager.playClick());
-      this.switchScreen(GAME_STATES.PLAYING);
-      if (window.gameEngine) {
-        window.gameEngine.startSoloGame(this.selectedRole, this.selectedDifficulty, this.selectedTimeFrame);
-      }
-    });
+    const btnAgain = document.getElementById('btnPlayAgain');
+    if (btnAgain) {
+      btnAgain.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        this.switchScreen(GAME_STATES.PLAYING);
+        if (window.gameEngine) {
+          window.gameEngine.startSoloGame(this.selectedRole, this.selectedDifficulty, this.selectedTimeFrame);
+        }
+      };
+    }
 
     events.on('game:over', (data) => {
       this.renderResults(data);
@@ -176,9 +228,22 @@ export class UIManager {
   switchScreen(screenState) {
     this.currentScreen = screenState;
 
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) {
+      if (screenState === GAME_STATES.PLAYING) {
+        appContainer.classList.remove('hidden');
+      } else {
+        appContainer.classList.add('hidden');
+      }
+    }
+
     [this.homeScreen, this.soloSetupScreen, this.gameHud, this.resultsScreen].forEach(el => {
       if (el) el.classList.add('hidden');
     });
+
+    if (window.lobbyBg) {
+      window.lobbyBg.setActive(screenState !== GAME_STATES.PLAYING);
+    }
 
     switch (screenState) {
       case GAME_STATES.HOME:
@@ -211,6 +276,7 @@ export class UIManager {
       if (descEl) descEl.innerText = data.reason || 'Vale intercepted the thief and brought them to justice before time expired.';
     }
 
+    // Dynamic AI News Generation via Gemini API
     const aiStory = await this.aiReporter.generateMatchReport(data);
     if (aiStory) {
       if (titleEl && aiStory.headline) titleEl.innerText = aiStory.headline;
@@ -238,16 +304,34 @@ export class UIManager {
     if (soundSlider) soundSlider.value = save.settings.soundVolume * 100;
     if (musicSlider) musicSlider.value = save.settings.musicVolume * 100;
 
-    soundSlider?.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value) / 100;
-      audioManager.setVolumes(val, save.settings.musicVolume);
-      StorageManager.saveSettings({ soundVolume: val });
-    });
+    const nameInput = document.getElementById('operativeNameInput');
+    const homeName = document.getElementById('homeOperativeName');
 
-    musicSlider?.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value) / 100;
-      audioManager.setVolumes(save.settings.soundVolume, val);
-      StorageManager.saveSettings({ musicVolume: val });
-    });
+    if (nameInput) {
+      nameInput.value = localStorage.getItem('TICKFALL_OPERATIVE_NAME') || 'OPERATIVE_40';
+      if (homeName) homeName.innerText = nameInput.value;
+
+      nameInput.oninput = (e) => {
+        const val = e.target.value.toUpperCase() || 'OPERATIVE_40';
+        localStorage.setItem('TICKFALL_OPERATIVE_NAME', val);
+        if (homeName) homeName.innerText = val;
+      };
+    }
+
+    if (soundSlider) {
+      soundSlider.oninput = (e) => {
+        const val = parseFloat(e.target.value) / 100;
+        audioManager.setVolumes(val, save.settings.musicVolume);
+        StorageManager.saveSettings({ soundVolume: val });
+      };
+    }
+
+    if (musicSlider) {
+      musicSlider.oninput = (e) => {
+        const val = parseFloat(e.target.value) / 100;
+        audioManager.setVolumes(save.settings.soundVolume, val);
+        StorageManager.saveSettings({ musicVolume: val });
+      };
+    }
   }
 }

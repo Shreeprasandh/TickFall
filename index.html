@@ -10,41 +10,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=1.0.3">
   <link rel="manifest" href="manifest.json">
+
+  <!-- Immediate Fail-Safe Global Modal Handler Script -->
+  <script>
+    window.openModal = function(modalId) {
+      var modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
+    };
+    window.closeModal = function(modalId) {
+      var modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+    };
+  </script>
 </head>
 <body>
 
-  <!-- Top-Right Global Quick Controls (Speaker Mute + Info) -->
-  <div class="top-right-controls">
-    <button id="btnMuteAudio" class="icon-control-btn" title="Toggle Audio" aria-label="Mute Audio">
-      <svg id="iconVolume" class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-      </svg>
-    </button>
-    <button id="btnOpenInfo" class="icon-control-btn" title="Game Info & Controls" aria-label="Game Info">
-      <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="16" x2="12" y2="12"></line>
-        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-      </svg>
-    </button>
-  </div>
-
-  <!-- Bottom-Left Story Text Link -->
-  <div class="bottom-left-controls">
-    <button id="btnOpenStory" class="text-link-btn">STORY</button>
-  </div>
-
-  <!-- Bottom-Right Feedback Text Link -->
-  <div class="bottom-right-controls">
-    <button id="btnOpenFeedback" class="text-link-btn">FEEDBACK</button>
-  </div>
-
   <!-- Main Game Split-Screen Container -->
-  <div id="appContainer" class="app-container">
+  <div id="appContainer" class="app-container hidden">
     
     <!-- LEFT PANEL: THIEF (CIPHER) -->
     <div class="game-panel left-panel">
@@ -84,20 +74,69 @@
     
     <!-- HOME SCREEN -->
     <div id="homeScreen" class="screen home-screen">
+      <canvas id="lobbyBgCanvas"></canvas>
+
+      <!-- Top-Right Controls -->
+      <div class="top-right-controls">
+        <button id="btnMuteAudio" class="icon-control-btn" title="Toggle Audio" aria-label="Mute Audio">
+          <svg id="iconVolume" class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+        </button>
+        <button id="btnOpenInfo" class="icon-control-btn" onclick="window.openModal('infoModal')" title="Game Info & Controls" aria-label="Game Info">
+          <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Bottom-Left Story Text Link -->
+      <div class="bottom-left-controls">
+        <button id="btnOpenStory" class="text-link-btn" onclick="window.openModal('storyModal')">STORY</button>
+      </div>
+
+      <!-- Bottom-Right Feedback Text Link -->
+      <div class="bottom-right-controls">
+        <button id="btnOpenFeedback" class="text-link-btn" onclick="window.openModal('feedbackModal')">FEEDBACK</button>
+      </div>
+
       <div class="hero-content">
         <h1 class="main-title">TickFall</h1>
         <p class="tagline">ONE DIAMOND • ONE BOMB • TWO STORIES • ONE CHRONOMETER</p>
         <div class="title-divider"></div>
 
-        <!-- Center Profile Figure Icon Button -->
-        <button id="btnOpenProfile" class="profile-figure-btn" title="Operative Dossier & Settings">
-          <div class="figure-avatar">
-            <svg viewBox="0 0 64 64" fill="none" class="avatar-svg">
-              <path d="M32 12C24 12 18 18 18 26C18 31.5 21.5 36.2 26.5 38.5C18.5 41.5 12 49 12 58H52C52 49 45.5 41.5 37.5 38.5C42.5 36.2 46 31.5 46 26C46 18 40 12 32 12Z" fill="#E5DEC9" opacity="0.9"/>
-              <path d="M26 24H38V27H26V24Z" fill="#C5A059"/>
+        <!-- Redesigned 3D Thief Profile Emblem Button -->
+        <button id="btnOpenProfile" class="profile-3d-btn" onclick="window.openModal('profileModal')" title="Operative Dossier & Settings">
+          <div class="thief-3d-emblem">
+            <svg viewBox="0 0 80 80" fill="none" class="thief-3d-svg">
+              <defs>
+                <linearGradient id="coatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#E5DEC9"/>
+                  <stop offset="100%" stop-color="#8E8573"/>
+                </linearGradient>
+                <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#C5A059"/>
+                  <stop offset="100%" stop-color="#FFF5D6"/>
+                </linearGradient>
+                <filter id="shadow3d" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.6"/>
+                </filter>
+              </defs>
+              <g filter="url(#shadow3d)">
+                <path d="M40 8C26 8 16 18 16 32C16 41 21 48 28 52V68H52V52C59 48 64 41 64 32C64 18 54 8 40 8Z" fill="#141720"/>
+                <path d="M26 50L40 70L54 50" stroke="url(#coatGrad)" stroke-width="3" stroke-linecap="round"/>
+                <path d="M24 28C24 20 31 16 40 16C49 16 56 20 56 28C56 38 49 44 40 44C31 44 24 38 24 28Z" fill="url(#coatGrad)"/>
+                <rect x="28" y="27" width="24" height="6" rx="3" fill="url(#visorGrad)"/>
+              </g>
             </svg>
           </div>
-          <span class="figure-label">DOSSIER & SETTINGS</span>
+          <div class="profile-name-subtext">
+            <span class="operative-alias-text" id="homeOperativeName">OPERATIVE_40</span>
+          </div>
         </button>
         
         <div class="menu-button-group">
@@ -237,12 +276,12 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-back modal-close-btn" data-modal="infoModal">CLOSE MANUAL</button>
+        <button class="btn btn-back modal-close-btn" data-modal="infoModal" onclick="window.closeModal('infoModal')">CLOSE MANUAL</button>
       </div>
     </div>
   </div>
 
-  <!-- SINGLE-SCREEN STORY POPUP (NO SCROLL NEEDED) -->
+  <!-- SINGLE-SCREEN STORY POPUP -->
   <div id="storyModal" class="modal-overlay hidden">
     <div class="modal-card story-card single-screen-card">
       <div class="modal-header">
@@ -257,7 +296,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-back modal-close-btn" data-modal="storyModal">CLOSE STORY</button>
+        <button class="btn btn-back modal-close-btn" data-modal="storyModal" onclick="window.closeModal('storyModal')">CLOSE STORY</button>
       </div>
     </div>
   </div>
@@ -278,7 +317,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-back modal-close-btn" data-modal="feedbackModal">CANCEL</button>
+        <button class="btn btn-back modal-close-btn" data-modal="feedbackModal" onclick="window.closeModal('feedbackModal')">CANCEL</button>
         <button id="btnSubmitFeedback" class="btn btn-primary">SUBMIT FEEDBACK</button>
       </div>
     </div>
@@ -337,11 +376,11 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-primary modal-close-btn" data-modal="profileModal">SAVE & CLOSE</button>
+        <button class="btn btn-primary modal-close-btn" data-modal="profileModal" onclick="window.closeModal('profileModal')">SAVE & CLOSE</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="src/main.js"></script>
+  <script type="module" src="src/main.js?v=1.0.3"></script>
 </body>
 </html>
