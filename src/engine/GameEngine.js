@@ -1,6 +1,6 @@
 // Main Game Engine Loop with State Machine & Interaction Logic
 
-import { GAME_STATES, ROLES, TIMER_ACTIONS, TOTAL_FLOORS, FLOOR_HEIGHT } from '../utils/constants.js';
+import { GAME_STATES, ROLES, TIMER_ACTIONS, TOTAL_FLOORS, FLOOR_HEIGHT, WALL_THICKNESS } from '../utils/constants.js';
 import { events } from '../utils/events.js';
 import { inputManager } from './InputManager.js';
 import { audioManager } from './AudioManager.js';
@@ -265,52 +265,85 @@ export class GameEngine {
     ];
 
     charList.forEach(({ char, cam, particles, isThief }) => {
-      const fIdx = Math.min(Math.max(Math.floor(char.y / FLOOR_HEIGHT), 0), TOTAL_FLOORS - 1);
-      const floorObj = this.buildingFloors[fIdx];
-      if (floorObj && floorObj.objects) {
-        floorObj.objects.forEach(obj => {
-          if (!obj.active) return;
-          const dist = Math.hypot((char.x + char.width / 2) - (obj.x + 18), (char.y + char.height / 2) - (obj.y + 18));
-          if (dist < 42) {
-            if (obj.type === 'power_floor_breaker') {
-              obj.active = false;
-              // Instant 5-floor downward drill blast!
-              char.y = Math.min((TOTAL_FLOORS - 1) * FLOOR_HEIGHT, char.y + 5 * FLOOR_HEIGHT);
-              cam.shake(12);
-              particles.emit(char.x, char.y, 25, 'camera');
-              audioManager.playPowerFloorBreaker();
-              this.renderer.addFloatingText('⚡ 5-FLOOR DRILL BLAST!', char.x, char.y - 20, '#FF6D00', isThief ? 'left' : 'right');
-            } else if (obj.type === 'power_super_grapple') {
-              obj.active = false;
-              // Instant 5-floor upward super vault!
-              char.y = Math.max(0, char.y - 5 * FLOOR_HEIGHT);
-              cam.shake(10);
-              particles.emit(char.x, char.y, 25, 'pickup');
-              audioManager.playPowerSuperGrapple();
-              this.renderer.addFloatingText('🚀 5-FLOOR SUPER VAULT!', char.x, char.y - 20, '#00F2FE', isThief ? 'left' : 'right');
-            } else if (obj.type === 'power_time_freeze') {
-              obj.active = false;
-              audioManager.playPowerTimeFreeze();
-              this.timerSystem.modifyTime(isThief ? -5 : 5, 'Time Freeze');
-              this.renderer.addFloatingText('❄️ CHRONO LOCK (5s)!', char.x, char.y - 20, '#76E4F7', isThief ? 'left' : 'right');
-            } else if (obj.type === 'power_speed_surge') {
-              obj.active = false;
-              char.stealthTimer = 4.0;
-              audioManager.playPowerSpeedSurge();
-              this.renderer.addFloatingText('⚡ PHANTOM SPRINT!', char.x, char.y - 20, '#FFD700', isThief ? 'left' : 'right');
-            } else if (obj.type === 'power_sonar_reveal') {
-              obj.active = false;
-              audioManager.playPowerSonarReveal();
-              this.renderer.addFloatingText('📡 SONAR REVEAL!', char.x, char.y - 20, '#00E676', isThief ? 'left' : 'right');
-            } else if (obj.type === 'rare_diamond_chest') {
-              obj.active = false;
-              char.chips += 25;
-              particles.emit(char.x, char.y, 20, 'pickup');
-              audioManager.playPowerDiamondLoot();
-              this.renderer.addFloatingText('💎 +25 DIAMONDS!', char.x, char.y - 20, '#00E5FF', isThief ? 'left' : 'right');
+      const currentFloorIdx = Math.min(Math.max(Math.floor((char.y + char.height / 2) / FLOOR_HEIGHT), 0), TOTAL_FLOORS - 1);
+
+      // Check current floor and adjacent floor objects
+      for (let f = Math.max(0, currentFloorIdx - 1); f <= Math.min(TOTAL_FLOORS - 1, currentFloorIdx + 1); f++) {
+        const floorObj = this.buildingFloors[f];
+        if (floorObj && floorObj.objects) {
+          floorObj.objects.forEach(obj => {
+            if (!obj.active) return;
+
+            // 1. Moving Laser Grid Hazard Check (Independent of obj.x origin distance!)
+            if (obj.type === 'moving_laser_barrier') {
+              const laserX = WALL_THICKNESS + 40 + (Math.sin(Date.now() * 0.003 + obj.y) + 1) * 120;
+              const charMidX = char.x + char.width / 2;
+              const charMidY = char.y + char.height / 2;
+
+              const onSameFloor = Math.abs(charMidY - (obj.y - 10)) < 70;
+              const hitsBeam = Math.abs(charMidX - laserX) < 26;
+
+              if (onSameFloor && hitsBeam && !char.isSliding) {
+                if (!char.isLaserTripped) {
+                  char.isLaserTripped = true;
+                  const timeDelta = isThief ? 4 : -4;
+                  this.timerSystem.modifyTime(timeDelta, 'Tripped Laser Grid');
+                  audioManager.playAlarm();
+                  particles.emit(char.x, char.y, 16, 'camera');
+                  const tagText = isThief ? '⚡ LASER GRID TRIP (+4s)!' : '⚡ LASER GRID TRIP (-4s)!';
+                  this.renderer.addFloatingText(tagText, char.x - 20, char.y - 20, '#8A3E45', isThief ? 'left' : 'right');
+                  setTimeout(() => { if (char) char.isLaserTripped = false; }, 1800);
+                }
+              }
+            } else {
+              // 2. Proximity pickup objects
+              const dist = Math.hypot((char.x + char.width / 2) - (obj.x + 18), (char.y + char.height / 2) - (obj.y + 18));
+              if (dist < 42) {
+                if (obj.type === 'power_floor_breaker') {
+                  obj.active = false;
+                  char.y = Math.min((TOTAL_FLOORS - 1) * FLOOR_HEIGHT, char.y + 5 * FLOOR_HEIGHT);
+                  cam.shake(12);
+                  particles.emit(char.x, char.y, 25, 'camera');
+                  audioManager.playPowerFloorBreaker();
+                  this.renderer.addFloatingText('⚡ 5-FLOOR DRILL BLAST!', char.x, char.y - 20, '#FF6D00', isThief ? 'left' : 'right');
+                } else if (obj.type === 'power_super_grapple') {
+                  obj.active = false;
+                  char.y = Math.max(0, char.y - 5 * FLOOR_HEIGHT);
+                  cam.shake(10);
+                  particles.emit(char.x, char.y, 25, 'pickup');
+                  audioManager.playPowerSuperGrapple();
+                  this.renderer.addFloatingText('🚀 5-FLOOR SUPER VAULT!', char.x, char.y - 20, '#00F2FE', isThief ? 'left' : 'right');
+                } else if (obj.type === 'power_time_freeze') {
+                  obj.active = false;
+                  audioManager.playPowerTimeFreeze();
+                  this.timerSystem.modifyTime(isThief ? -5 : 5, 'Time Freeze');
+                  this.renderer.addFloatingText('❄️ CHRONO LOCK (5s)!', char.x, char.y - 20, '#76E4F7', isThief ? 'left' : 'right');
+                } else if (obj.type === 'power_speed_surge') {
+                  obj.active = false;
+                  char.stealthTimer = 4.0;
+                  audioManager.playPowerSpeedSurge();
+                  this.renderer.addFloatingText('⚡ PHANTOM SPRINT!', char.x, char.y - 20, '#FFD700', isThief ? 'left' : 'right');
+                } else if (obj.type === 'power_sonar_reveal') {
+                  obj.active = false;
+                  audioManager.playPowerSonarReveal();
+                  this.renderer.addFloatingText('📡 SONAR REVEAL!', char.x, char.y - 20, '#00E676', isThief ? 'left' : 'right');
+                } else if (obj.type === 'express_elevator') {
+                  char.y = Math.min((TOTAL_FLOORS - 1) * FLOOR_HEIGHT, char.y + 10 * FLOOR_HEIGHT);
+                  cam.shake(10);
+                  particles.emit(char.x, char.y, 20, 'pickup');
+                  audioManager.playPowerSuperGrapple();
+                  this.renderer.addFloatingText('🛗 EXPRESS ELEVATOR (10 FLOORS)!', char.x - 20, char.y - 20, '#5C7C99', isThief ? 'left' : 'right');
+                } else if (obj.type === 'rare_diamond_chest') {
+                  obj.active = false;
+                  char.chips += 25;
+                  particles.emit(char.x, char.y, 20, 'pickup');
+                  audioManager.playPowerDiamondLoot();
+                  this.renderer.addFloatingText('💎 +25 DIAMONDS!', char.x, char.y - 20, '#00E5FF', isThief ? 'left' : 'right');
+                }
+              }
             }
-          }
-        });
+          });
+        }
       }
     });
 
@@ -320,12 +353,26 @@ export class GameEngine {
       if (floor && floor.objects) {
         floor.objects.forEach(obj => {
           if (!obj.active) return;
-          if (PhysicsEngine.checkCollision(this.thief, { ...obj, height: 32, width: 32 })) {
-            if (obj.type === 'security_camera') {
-              obj.active = false;
-              this.timerSystem.modifyTime(TIMER_ACTIONS.CAMERA_SMASH, 'Camera Smashed');
-              audioManager.playCameraSmash();
-              this.leftParticles.emit(obj.x, obj.y, 12, 'camera');
+          if (PhysicsEngine.checkCollision(this.thief, { ...obj, height: 48, width: 48 })) {
+            if (obj.type === 'express_elevator') {
+              this.thief.y = Math.min((TOTAL_FLOORS - 1) * FLOOR_HEIGHT, this.thief.y + 10 * FLOOR_HEIGHT);
+              this.leftCamera.shake(10);
+              this.leftParticles.emit(this.thief.x, this.thief.y, 20, 'pickup');
+              audioManager.playPowerSuperGrapple();
+              this.renderer.addFloatingText('🛗 EXPRESS ELEVATOR (10 FLOORS)!', this.thief.x - 20, this.thief.y - 20, '#5C7C99', 'left');
+            } else if (obj.type === 'security_camera') {
+              const cycle = ((Date.now() / 1000) + obj.x * 0.1) % 6.0;
+              const isCameraOff = cycle >= 4.0;
+              if (isCameraOff) {
+                obj.active = false;
+                this.timerSystem.modifyTime(TIMER_ACTIONS.CAMERA_SMASH, 'Camera Smashed');
+                audioManager.playCameraSmash();
+                this.leftParticles.emit(obj.x, obj.y, 16, 'camera');
+                this.renderer.addFloatingText('💥 CAMERA SMASHED! (-3s)', obj.x, obj.y - 20, '#00E676', 'left');
+              } else {
+                audioManager.playAlarm();
+                this.renderer.addFloatingText('🔒 CAMERA ACTIVE! WAIT FOR OFF CYCLE', obj.x - 30, obj.y - 20, '#8A3E45', 'left');
+              }
             } else if (obj.type === 'safe_vault') {
               obj.active = false;
               this.thief.chips += 15;
@@ -343,12 +390,26 @@ export class GameEngine {
       if (floor && floor.objects) {
         floor.objects.forEach(obj => {
           if (!obj.active) return;
-          if (PhysicsEngine.checkCollision(this.detective, { ...obj, height: 32, width: 32 })) {
-            if (obj.type === 'radio_station') {
-              obj.active = false;
-              this.timerSystem.modifyTime(TIMER_ACTIONS.RADIO_STATION_USE, 'Radio Report');
-              audioManager.playCoin();
-              this.rightParticles.emit(obj.x, obj.y, 10, 'pickup');
+          if (PhysicsEngine.checkCollision(this.detective, { ...obj, height: 48, width: 48 })) {
+            if (obj.type === 'express_elevator') {
+              this.detective.y = Math.max(0, this.detective.y - 10 * FLOOR_HEIGHT);
+              this.rightCamera.shake(10);
+              this.rightParticles.emit(this.detective.x, this.detective.y, 20, 'pickup');
+              audioManager.playPowerSuperGrapple();
+              this.renderer.addFloatingText('🛗 EXPRESS ELEVATOR (10 FLOORS)!', this.detective.x - 20, this.detective.y - 20, '#5C7C99', 'right');
+            } else if (obj.type === 'security_camera') {
+              const cycle = ((Date.now() / 1000) + obj.x * 0.1) % 6.0;
+              const isCameraOff = cycle >= 4.0;
+              if (isCameraOff) {
+                obj.active = false;
+                this.timerSystem.modifyTime(TIMER_ACTIONS.CAMERA_SMASH, 'Camera Smashed');
+                audioManager.playCameraSmash();
+                this.rightParticles.emit(obj.x, obj.y, 16, 'camera');
+                this.renderer.addFloatingText('💥 CAMERA SMASHED! (-3s)', obj.x, obj.y - 20, '#00E676', 'right');
+              } else {
+                audioManager.playAlarm();
+                this.renderer.addFloatingText('🔒 CAMERA ACTIVE! WAIT FOR OFF CYCLE', obj.x - 30, obj.y - 20, '#8A3E45', 'right');
+              }
             } else if (obj.type === 'bomb_device' && !this.detective.bombDiffused) {
               events.emit('puzzle:open');
             }

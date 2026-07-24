@@ -179,9 +179,27 @@ export class Renderer {
   renderWallArchitecturalDetails(ctx, theme, floorY) {
     const pattern = theme ? (theme.pattern || theme.name) : 'wood_wainscot';
     ctx.save();
-    ctx.globalAlpha = 0.20; // Soft, smooth, low-opacity wall details
 
-    // 1. Wallpaper & Backwall Architectural Textures
+    // 1. Exterior Glass Window Side-Cutaway Frame & Glare Sheen
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+    ctx.lineWidth = 1;
+    // Vertical Glass Mullions (Window Panes)
+    const glassW = (BUILDING_WIDTH - WALL_THICKNESS * 2) / 3;
+    ctx.beginPath();
+    ctx.moveTo(WALL_THICKNESS + glassW, floorY); ctx.lineTo(WALL_THICKNESS + glassW, floorY + 144);
+    ctx.moveTo(WALL_THICKNESS + glassW * 2, floorY); ctx.lineTo(WALL_THICKNESS + glassW * 2, floorY + 144);
+    ctx.stroke();
+
+    // Diagonal Exterior Window Glare Lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(WALL_THICKNESS + 30, floorY + 10); ctx.lineTo(WALL_THICKNESS + 110, floorY + 130);
+    ctx.moveTo(BUILDING_WIDTH - WALL_THICKNESS - 120, floorY + 15); ctx.lineTo(BUILDING_WIDTH - WALL_THICKNESS - 40, floorY + 135);
+    ctx.stroke();
+
+    // 2. Wallpaper & Backwall Architectural Textures (Subtle, smooth low opacity)
+    ctx.globalAlpha = 0.18;
     if (pattern === 'subway_tile_white' || pattern === 'subway_brick' || pattern === 'mossy_brick') {
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.lineWidth = 1;
@@ -225,12 +243,13 @@ export class Renderer {
       ctx.fillRect(BUILDING_WIDTH - WALL_THICKNESS - 52, floorY + 10, 12, 138);
     }
 
-    // 2. Baseboard & Crown Molding Trims
+    // 3. Baseboard & Crown Molding Trims
+    ctx.globalAlpha = 0.35;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
     ctx.fillRect(WALL_THICKNESS, floorY, BUILDING_WIDTH - WALL_THICKNESS * 2, 5); // Crown molding
-    ctx.fillRect(WALL_THICKNESS, floorY + 144, BUILDING_WIDTH - WALL_THICKNESS * 2, 6); // Baseboard
+    ctx.fillRect(WALL_THICKNESS, floorY + 140, BUILDING_WIDTH - WALL_THICKNESS * 2, 4); // Baseboard
 
-    // 3. Ceiling Light Fixture & Soft Radial Light Cone
+    // 4. Ceiling Light Fixture & Soft Radial Light Cone
     const ceilX = BUILDING_WIDTH / 2;
     ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
     ctx.lineWidth = 1.5;
@@ -252,272 +271,271 @@ export class Renderer {
   renderFloorBackgroundProps(ctx, floor, floorY) {
     const themeName = floor.theme ? floor.theme.name : 'Office';
     const varIdx = Math.abs(floor.floorNumber) % 3;
+    const floorSlabY = floorY + 144; // Bottom floor slab surface elevation
     ctx.save();
-    ctx.globalAlpha = 0.35; // Subtle, smooth, deep dark atmospheric mood for room props
+    ctx.globalAlpha = 0.35; // Soft ambient side-view depth opacity
 
     if (themeName === 'Sky Helipad') {
-      // 🚁 Helipad Target Ring & Perimeter Beacon Lights
+      // 🚁 Helipad Target Ring & Perimeter Beacon Lights (Side Elevation)
       const hx = BUILDING_WIDTH / 2;
-      ctx.strokeStyle = '#00F2FE';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(hx, floorY + 80, 48, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = '#00F2FE';
-      ctx.font = '700 24px Inter, sans-serif';
+      ctx.strokeStyle = '#5C7C99'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(hx, floorSlabY - 60, 44, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#5C7C99'; ctx.font = '700 20px Inter, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('H', hx, floorY + 80);
+      ctx.fillText('H', hx, floorSlabY - 60);
 
-      // Warning Strobe Beacons
-      ctx.fillStyle = '#FF0844';
-      ctx.fillRect(WALL_THICKNESS + 25, floorY + 25, 12, 18);
-      ctx.fillRect(BUILDING_WIDTH - WALL_THICKNESS - 37, floorY + 25, 12, 18);
+      // Warning Strobe Beacons on Floor Slab
+      ctx.fillStyle = '#8A3E45';
+      ctx.fillRect(WALL_THICKNESS + 25, floorSlabY - 24, 12, 24);
+      ctx.fillRect(BUILDING_WIDTH - WALL_THICKNESS - 37, floorSlabY - 24, 12, 24);
 
     } else if (themeName === 'Royal Penthouse' || themeName === 'Penthouse Lounge') {
-      // 🛏️ Ultra-Detail Royal Penthouse Suite
-      const bedX = varIdx === 0 ? WALL_THICKNESS + 40 : BUILDING_WIDTH - WALL_THICKNESS - 125;
+      // 🛏️ Royal Penthouse Suite (Grounded on Floor Slab)
+      const bedX = varIdx === 0 ? WALL_THICKNESS + 40 : BUILDING_WIDTH - WALL_THICKNESS - 130;
       
-      // Quilted Headboard with Gold Trim
+      // Quilted Headboard resting on floor
       ctx.fillStyle = '#2A1F2D';
-      ctx.fillRect(bedX, floorY + 70, 92, 78);
-      ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(bedX, floorY + 70, 92, 78);
+      ctx.fillRect(bedX, floorSlabY - 74, 94, 74);
+      ctx.strokeStyle = '#C5A059'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(bedX, floorSlabY - 74, 94, 74);
 
       // Double Pillows
-      ctx.fillStyle = '#F5EBDC';
-      ctx.fillRect(bedX + 8, floorY + 78, 34, 20);
-      ctx.fillRect(bedX + 50, floorY + 78, 34, 20);
+      ctx.fillStyle = '#E2D9C8';
+      ctx.fillRect(bedX + 8, floorSlabY - 66, 34, 18);
+      ctx.fillRect(bedX + 52, floorSlabY - 66, 34, 18);
 
-      // Satin Duvet Sheet
-      ctx.fillStyle = '#6E2A40';
-      ctx.fillRect(bedX + 4, floorY + 100, 84, 48);
-      ctx.fillStyle = '#8B3853';
-      ctx.fillRect(bedX + 4, floorY + 100, 84, 14);
+      // Satin Duvet Sheet resting on floor slab
+      ctx.fillStyle = '#4A2328';
+      ctx.fillRect(bedX + 4, floorSlabY - 44, 86, 44);
+      ctx.fillStyle = '#6E2D34';
+      ctx.fillRect(bedX + 4, floorSlabY - 44, 86, 12);
 
-      // Nightstand & Brass Lamp
-      const nsX = bedX === WALL_THICKNESS + 40 ? bedX + 98 : bedX - 34;
+      // Nightstand & Lamp on floor slab
+      const nsX = bedX === WALL_THICKNESS + 40 ? bedX + 100 : bedX - 34;
       ctx.fillStyle = '#221926';
-      ctx.fillRect(nsX, floorY + 110, 30, 38);
-      ctx.fillStyle = '#FFD700'; ctx.fillRect(nsX + 13, floorY + 122, 4, 4);
-      ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
-      ctx.beginPath(); ctx.arc(nsX + 15, floorY + 100, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(nsX, floorSlabY - 36, 30, 36);
+      ctx.fillStyle = '#C5A059'; ctx.fillRect(nsX + 13, floorSlabY - 24, 4, 4);
+      ctx.fillStyle = 'rgba(197, 160, 89, 0.8)';
+      ctx.beginPath(); ctx.arc(nsX + 15, floorSlabY - 44, 8, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Diamond Vault' || themeName === 'High-Security Vault') {
-      // 🔒 Ultra-Detail Reinforced Vault Wall & Deposit Safes
+      // 🔒 Reinforced Vault Wall Door resting on floor slab
       const vaultX = WALL_THICKNESS + 40;
       ctx.fillStyle = '#1B222A';
-      ctx.fillRect(vaultX, floorY + 20, 110, 125);
-      ctx.strokeStyle = '#00E5FF';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(vaultX, floorY + 20, 110, 125);
+      ctx.fillRect(vaultX, floorSlabY - 120, 110, 120);
+      ctx.strokeStyle = '#4B6B82'; ctx.lineWidth = 2;
+      ctx.strokeRect(vaultX, floorSlabY - 120, 110, 120);
 
       // Vault Wheel Lock
       ctx.fillStyle = '#C5A059';
-      ctx.beginPath(); ctx.arc(vaultX + 55, floorY + 82, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(vaultX + 55, floorSlabY - 60, 22, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#0F1720';
-      ctx.beginPath(); ctx.arc(vaultX + 55, floorY + 82, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(vaultX + 55, floorSlabY - 60, 10, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Grand Ballroom') {
-      // 🎻 Grand Piano & Crystal Chandelier
+      // 🎻 Grand Piano resting on floor slab
       const pianoX = WALL_THICKNESS + 45;
       ctx.fillStyle = '#120D0A';
-      ctx.fillRect(pianoX, floorY + 95, 80, 52);
-      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(pianoX + 10, floorY + 95, 60, 8);
-      ctx.fillStyle = '#E69C24'; ctx.fillRect(pianoX + 70, floorY + 120, 4, 4);
+      ctx.fillRect(pianoX, floorSlabY - 48, 85, 48);
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(pianoX + 10, floorSlabY - 48, 65, 8);
+      // Legs to floor
+      ctx.fillRect(pianoX + 8, floorSlabY - 16, 6, 16);
+      ctx.fillRect(pianoX + 72, floorSlabY - 16, 6, 16);
 
     } else if (themeName === 'High-Stakes Casino') {
-      // 🎰 Animated 7-7-7 Slot Machine Cabinet & Roulette Table
+      // 🎰 Slot Machine Cabinet & Roulette Table resting on floor slab
       const slotX = WALL_THICKNESS + 40;
       ctx.fillStyle = '#2E1212';
-      ctx.fillRect(slotX, floorY + 50, 46, 98);
-      ctx.fillStyle = '#FFD700'; ctx.fillRect(slotX + 6, floorY + 68, 34, 24);
+      ctx.fillRect(slotX, floorSlabY - 90, 46, 90);
+      ctx.fillStyle = '#A07038'; ctx.fillRect(slotX + 6, floorSlabY - 72, 34, 22);
 
       const rX = BUILDING_WIDTH - WALL_THICKNESS - 145;
       ctx.fillStyle = '#164223';
-      ctx.fillRect(rX, floorY + 98, 105, 50);
+      ctx.fillRect(rX, floorSlabY - 46, 105, 46);
 
     } else if (themeName === 'Executive Boardroom' || themeName === 'Executive Office' || themeName === 'Office') {
-      // 💼 Executive Workstation & Dual Curved Code Monitors
+      // 💼 Executive Workstation grounded on floor slab
       const deskX = WALL_THICKNESS + 50;
       ctx.fillStyle = '#222B3A';
-      ctx.fillRect(deskX, floorY + 100, 90, 48);
-      ctx.fillStyle = '#323E52'; ctx.fillRect(deskX - 4, floorY + 96, 98, 8);
+      ctx.fillRect(deskX, floorSlabY - 46, 90, 46);
+      ctx.fillStyle = '#323E52'; ctx.fillRect(deskX - 4, floorSlabY - 52, 98, 6);
 
+      // Monitors on desk
       ctx.fillStyle = '#0F1724';
-      ctx.fillRect(deskX + 10, floorY + 70, 34, 26);
-      ctx.fillRect(deskX + 48, floorY + 70, 34, 26);
-      ctx.fillStyle = 'rgba(79, 172, 254, 0.8)';
-      ctx.fillRect(deskX + 13, floorY + 73, 28, 20);
-      ctx.fillRect(deskX + 51, floorY + 73, 28, 20);
+      ctx.fillRect(deskX + 10, floorSlabY - 78, 34, 26);
+      ctx.fillRect(deskX + 48, floorSlabY - 78, 34, 26);
+      ctx.fillStyle = 'rgba(74, 95, 120, 0.7)';
+      ctx.fillRect(deskX + 13, floorSlabY - 75, 28, 20);
+      ctx.fillRect(deskX + 51, floorSlabY - 75, 28, 20);
 
-      // Potted Plant
+      // Potted Plant on floor slab
       const plantX = BUILDING_WIDTH - WALL_THICKNESS - 75;
-      ctx.fillStyle = '#8D5B4C'; ctx.fillRect(plantX, floorY + 118, 26, 30);
-      ctx.fillStyle = '#00E676';
-      ctx.beginPath(); ctx.arc(plantX + 8, floorY + 108, 14, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(plantX + 20, floorY + 104, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#705B48'; ctx.fillRect(plantX, floorSlabY - 30, 26, 30);
+      ctx.fillStyle = '#4A6B56';
+      ctx.beginPath(); ctx.arc(plantX + 8, floorSlabY - 38, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(plantX + 20, floorSlabY - 42, 16, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Modern Art Gallery' || themeName === 'Art Gallery') {
-      // 🎨 Painting Easel & Gilded Renaissance Oil Frame
+      // 🎨 Painting Easel standing on floor slab
       const easelX = WALL_THICKNESS + 50;
-      ctx.strokeStyle = '#B87A3D'; ctx.lineWidth = 3;
+      ctx.strokeStyle = '#9E7A53'; ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(easelX + 22, floorY + 40); ctx.lineTo(easelX + 4, floorY + 148);
-      ctx.moveTo(easelX + 22, floorY + 40); ctx.lineTo(easelX + 40, floorY + 148);
+      ctx.moveTo(easelX + 22, floorSlabY - 100); ctx.lineTo(easelX + 4, floorSlabY);
+      ctx.moveTo(easelX + 22, floorSlabY - 100); ctx.lineTo(easelX + 40, floorSlabY);
       ctx.stroke();
-      ctx.fillStyle = '#F5EBDC'; ctx.fillRect(easelX + 2, floorY + 62, 40, 44);
+      ctx.fillStyle = '#E2D9C8'; ctx.fillRect(easelX + 2, floorSlabY - 80, 40, 44);
 
+      // Gilded Renaissance Frame on wall
       const frameX = BUILDING_WIDTH - WALL_THICKNESS - 135;
-      ctx.fillStyle = '#C5A059'; ctx.fillRect(frameX, floorY + 30, 76, 56);
-      ctx.fillStyle = '#1A242B'; ctx.fillRect(frameX + 5, floorY + 35, 66, 46);
-      ctx.fillStyle = '#D89A50'; ctx.beginPath(); ctx.arc(frameX + 38, floorY + 58, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#C5A059'; ctx.fillRect(frameX, floorSlabY - 110, 76, 56);
+      ctx.fillStyle = '#1A242B'; ctx.fillRect(frameX + 5, floorSlabY - 105, 66, 46);
 
     } else if (themeName === 'Rooftop Conservatory') {
-      // 🌿 Glass Conservatory Arch & Carved Stone Fountain
+      // 🌿 Stone Fountain resting on floor slab
       const fX = BUILDING_WIDTH / 2 - 35;
-      ctx.fillStyle = '#2A3B30'; ctx.fillRect(fX, floorY + 110, 70, 38);
-      ctx.fillStyle = '#00E676'; ctx.beginPath(); ctx.arc(fX + 35, floorY + 105, 18, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2A3B30'; ctx.fillRect(fX, floorSlabY - 38, 70, 38);
+      ctx.fillStyle = '#4A6B56'; ctx.beginPath(); ctx.arc(fX + 35, floorSlabY - 44, 18, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Cyber Stock Exchange') {
-      // 📈 Multi-Monitor Trading Wall & Digital Ticker
+      // 📈 Multi-Monitor Trading Wall (Eye Level)
       const tX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#0F1A2A'; ctx.fillRect(tX, floorY + 25, 120, 50);
-      ctx.fillStyle = '#00F2FE'; ctx.fillRect(tX + 5, floorY + 30, 110, 8);
-      ctx.fillStyle = '#00E676'; ctx.fillRect(tX + 5, floorY + 44, 50, 24);
-      ctx.fillStyle = '#FF5252'; ctx.fillRect(tX + 60, floorY + 44, 55, 24);
+      ctx.fillStyle = '#0F1A2A'; ctx.fillRect(tX, floorSlabY - 115, 120, 50);
+      ctx.fillStyle = '#3D5A73'; ctx.fillRect(tX + 5, floorSlabY - 110, 110, 8);
 
     } else if (themeName === 'Luxury Spa') {
-      // 💆 Massage Table & Steam Towel Rack
+      // 💆 Massage Table resting on floor slab
       const spaX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#1B2C2D'; ctx.fillRect(spaX, floorY + 110, 84, 38);
-      ctx.fillStyle = '#76E4F7'; ctx.fillRect(spaX + 6, floorY + 104, 24, 10);
+      ctx.fillStyle = '#1B2C2D'; ctx.fillRect(spaX, floorSlabY - 36, 84, 36);
+      ctx.fillStyle = '#4E757D'; ctx.fillRect(spaX + 6, floorSlabY - 42, 24, 8);
 
     } else if (themeName === 'Cybernetics Lab') {
-      // 🤖 Cybernetic Android Torso Pod
+      // 🤖 Android Torso Pod resting on floor slab
       const podX = BUILDING_WIDTH / 2 - 25;
-      ctx.fillStyle = '#0F2630'; ctx.fillRect(podX, floorY + 30, 50, 118);
-      ctx.strokeStyle = '#00E5FF'; ctx.lineWidth = 2; ctx.strokeRect(podX, floorY + 30, 50, 118);
-      ctx.fillStyle = '#00E5FF'; ctx.beginPath(); ctx.arc(podX + 25, floorY + 70, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0F2630'; ctx.fillRect(podX, floorSlabY - 115, 50, 115);
+      ctx.strokeStyle = '#3B6B78'; ctx.lineWidth = 2; ctx.strokeRect(podX, floorSlabY - 115, 50, 115);
 
     } else if (themeName === 'Grand Library' || themeName === 'Library') {
-      // 📚 10-Foot Grand Bookshelf & Brass Ladder
+      // 📚 Grand Bookshelf resting on floor slab
       const bookX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#362214'; ctx.fillRect(bookX, floorY + 18, 105, 130);
-      const bookColors = ['#A83232', '#2B5B84', '#D4AF37', '#2E7D32', '#7B1FA2'];
+      ctx.fillStyle = '#362214'; ctx.fillRect(bookX, floorSlabY - 124, 105, 124);
+      const bookColors = ['#7A3B3B', '#2B4A6A', '#9C6E3B', '#3A6B48', '#5A3B6A'];
       for (let row = 0; row < 3; row++) {
         for (let b = 0; b < 9; b++) {
           ctx.fillStyle = bookColors[(row + b) % bookColors.length];
-          ctx.fillRect(bookX + 8 + b * 10, floorY + 28 + row * 38, 8, 28);
+          ctx.fillRect(bookX + 8 + b * 10, floorSlabY - 116 + row * 36, 8, 26);
         }
       }
 
     } else if (themeName === 'Private Cinema') {
-      // 🎬 Projector Screen & Speaker Towers
+      // 🎬 Projector Screen mounted on back wall
       const scrX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#E5DEC9'; ctx.fillRect(scrX, floorY + 25, 110, 60);
-      ctx.fillStyle = '#140E18'; ctx.fillRect(scrX + 4, floorY + 29, 102, 52);
+      ctx.fillStyle = '#E5DEC9'; ctx.fillRect(scrX, floorSlabY - 118, 110, 60);
+      ctx.fillStyle = '#140E18'; ctx.fillRect(scrX + 4, floorSlabY - 114, 102, 52);
 
     } else if (themeName === 'Observatory') {
-      // 🔭 Heavy Brass Telescope
+      // 🔭 Astronomical Telescope standing on floor slab
       const teleX = BUILDING_WIDTH / 2 - 20;
-      ctx.strokeStyle = '#9B51E0'; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.moveTo(teleX + 20, floorY + 40); ctx.lineTo(teleX - 10, floorY + 145); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(teleX + 20, floorY + 40); ctx.lineTo(teleX + 50, floorY + 145); ctx.stroke();
+      ctx.strokeStyle = '#584B78'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(teleX + 20, floorSlabY - 100); ctx.lineTo(teleX - 10, floorSlabY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(teleX + 20, floorSlabY - 100); ctx.lineTo(teleX + 50, floorSlabY); ctx.stroke();
 
     } else if (themeName === 'VIP Nightclub' || themeName === 'Nightclub') {
-      // 🎧 DJ Console & Speaker Towers
+      // 🎧 DJ Console & Speaker Towers grounded on floor slab
       const djX = BUILDING_WIDTH / 2 - 45;
-      ctx.fillStyle = '#1E122A'; ctx.fillRect(djX, floorY + 92, 90, 56);
+      ctx.fillStyle = '#1E122A'; ctx.fillRect(djX, floorSlabY - 52, 90, 52);
       ctx.fillStyle = '#0B0610';
-      ctx.beginPath(); ctx.arc(djX + 24, floorY + 104, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(djX + 66, floorY + 104, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#FF007F';
-      ctx.beginPath(); ctx.arc(djX + 24, floorY + 104, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(djX + 66, floorY + 104, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(djX + 24, floorSlabY - 38, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(djX + 66, floorSlabY - 38, 12, 0, Math.PI * 2); ctx.fill();
+
+      // Speaker Towers on floor slab
+      ctx.fillStyle = '#120A1A';
+      ctx.fillRect(WALL_THICKNESS + 25, floorSlabY - 98, 34, 98);
+      ctx.fillRect(BUILDING_WIDTH - WALL_THICKNESS - 59, floorSlabY - 98, 34, 98);
 
     } else if (themeName === 'Sub-Level Security Command' || themeName === 'Security Room') {
-      // 📹 6-Screen CCTV Array & Weapon Rack
+      // 📹 6-Screen CCTV Array on back wall
       const cctvX = WALL_THICKNESS + 45;
-      ctx.fillStyle = '#0D121A'; ctx.fillRect(cctvX, floorY + 18, 125, 68);
-      ctx.fillStyle = 'rgba(255, 51, 102, 0.6)';
-      ctx.fillRect(cctvX + 6, floorY + 22, 36, 28);
-      ctx.fillRect(cctvX + 46, floorY + 22, 36, 28);
-      ctx.fillRect(cctvX + 86, floorY + 22, 34, 28);
+      ctx.fillStyle = '#0D121A'; ctx.fillRect(cctvX, floorSlabY - 124, 125, 68);
+      ctx.fillStyle = 'rgba(138, 62, 69, 0.6)';
+      ctx.fillRect(cctvX + 6, floorSlabY - 120, 36, 28);
+      ctx.fillRect(cctvX + 46, floorSlabY - 120, 36, 28);
+      ctx.fillRect(cctvX + 86, floorSlabY - 120, 34, 28);
 
     } else if (themeName === 'Forensic Crime Lab' || themeName === 'Laboratory') {
-      // 🧪 Chemical Workstation & Centrifuge
+      // 🧪 Chemical Workstation grounded on floor slab
       const labX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#122824'; ctx.fillRect(labX, floorY + 102, 92, 46);
-      ctx.fillStyle = '#00E676';
-      ctx.fillRect(labX + 12, floorY + 84, 8, 18);
-      ctx.fillRect(labX + 26, floorY + 78, 10, 24);
+      ctx.fillStyle = '#122824'; ctx.fillRect(labX, floorSlabY - 44, 92, 44);
+      ctx.fillStyle = '#4A6B56';
+      ctx.fillRect(labX + 12, floorSlabY - 60, 8, 16);
+      ctx.fillRect(labX + 26, floorSlabY - 66, 10, 22);
 
     } else if (themeName === 'Deep Geothermal Station' || themeName === 'Boiler Room') {
-      // ♨️ Copper Steam Pipes & Gauge Dial
-      ctx.strokeStyle = '#FF6D00'; ctx.lineWidth = 6;
+      // ♨️ Copper Steam Pipes along upper ceiling
+      ctx.strokeStyle = '#9C5430'; ctx.lineWidth = 6;
       ctx.beginPath(); ctx.moveTo(WALL_THICKNESS, floorY + 22); ctx.lineTo(BUILDING_WIDTH - WALL_THICKNESS, floorY + 22); ctx.stroke();
       ctx.fillStyle = '#331B10'; ctx.beginPath(); ctx.arc(WALL_THICKNESS + 120, floorY + 22, 14, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Classified Arms Depot') {
-      // 🔫 Tactical Weapon Rack & Ammo Crates
+      // 🔫 Tactical Weapon Rack resting on floor slab
       const wX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#252525'; ctx.fillRect(wX, floorY + 30, 95, 118);
-      ctx.strokeStyle = '#FF5252'; ctx.lineWidth = 2; ctx.strokeRect(wX, floorY + 30, 95, 118);
+      ctx.fillStyle = '#252525'; ctx.fillRect(wX, floorSlabY - 110, 95, 110);
+      ctx.strokeStyle = '#784444'; ctx.lineWidth = 2; ctx.strokeRect(wX, floorSlabY - 110, 95, 110);
 
     } else if (themeName === 'Bio-Containment Sector') {
-      // ☣️ Bio-Containment Vat & Warning Arch
+      // ☣️ Bio-Containment Vat standing on floor slab
       const vatX = BUILDING_WIDTH / 2 - 22;
-      ctx.fillStyle = '#15261D'; ctx.fillRect(vatX, floorY + 35, 44, 110);
-      ctx.fillStyle = '#39FF14'; ctx.beginPath(); ctx.arc(vatX + 22, floorY + 80, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#15261D'; ctx.fillRect(vatX, floorSlabY - 110, 44, 110);
+      ctx.fillStyle = '#4A6B4E'; ctx.beginPath(); ctx.arc(vatX + 22, floorSlabY - 60, 16, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Underground Metro Hub') {
-      // 🚇 Turnstile Array & Bench
+      // 🚇 Turnstile Gate resting on floor slab
       const tX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#1E222A'; ctx.fillRect(tX, floorY + 90, 85, 58);
-      ctx.fillStyle = '#FFA726'; ctx.fillRect(tX + 10, floorY + 95, 12, 12);
+      ctx.fillStyle = '#1E222A'; ctx.fillRect(tX, floorSlabY - 54, 85, 54);
+      ctx.fillStyle = '#9A7242'; ctx.fillRect(tX + 10, floorSlabY - 48, 12, 12);
 
     } else if (themeName === 'Nuclear Reactor Bay') {
-      // ☢️ Reactor Core Rod & Radiation Shielding
+      // ☢️ Reactor Core Rod Casing standing on floor slab
       const nX = BUILDING_WIDTH / 2 - 30;
-      ctx.fillStyle = '#282810'; ctx.fillRect(nX, floorY + 20, 60, 128);
-      ctx.fillStyle = '#CCFF00'; ctx.beginPath(); ctx.arc(nX + 30, floorY + 75, 20, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#282810'; ctx.fillRect(nX, floorSlabY - 120, 60, 120);
+      ctx.fillStyle = '#7A8A3E'; ctx.beginPath(); ctx.arc(nX + 30, floorSlabY - 60, 20, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Sewer Filtration Plant') {
       // 🌊 Iron Sluice Gate & Drainage Pipes
-      ctx.strokeStyle = '#8BC34A'; ctx.lineWidth = 5;
+      ctx.strokeStyle = '#5A6B48'; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.moveTo(WALL_THICKNESS, floorY + 30); ctx.lineTo(BUILDING_WIDTH - WALL_THICKNESS, floorY + 30); ctx.stroke();
 
     } else if (themeName === 'Tactical Training Vault') {
-      // 🎯 Target Dummy & Locker
+      // 🎯 Target Dummy standing on floor slab
       const dX = WALL_THICKNESS + 50;
-      ctx.fillStyle = '#291E25'; ctx.fillRect(dX, floorY + 60, 24, 88);
-      ctx.fillStyle = '#E8A0B8'; ctx.beginPath(); ctx.arc(dX + 12, floorY + 50, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#291E25'; ctx.fillRect(dX, floorSlabY - 80, 24, 80);
+      ctx.fillStyle = '#6E5062'; ctx.beginPath(); ctx.arc(dX + 12, floorSlabY - 92, 12, 0, Math.PI * 2); ctx.fill();
 
     } else if (themeName === 'Deep Cyber Mainframe') {
-      // 💻 Dual Server Rack Towers
+      // 💻 Dual Server Rack Towers resting on floor slab
       const sX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#0B1E30'; ctx.fillRect(sX, floorY + 22, 45, 126);
-      ctx.fillRect(sX + 60, floorY + 22, 45, 126);
-      ctx.fillStyle = '#00F2FE'; ctx.fillRect(sX + 6, floorY + 30, 33, 4); ctx.fillRect(sX + 66, floorY + 30, 33, 4);
+      ctx.fillStyle = '#0B1E30'; ctx.fillRect(sX, floorSlabY - 120, 45, 120);
+      ctx.fillRect(sX + 60, floorSlabY - 120, 45, 120);
+      ctx.fillStyle = '#3B5875'; ctx.fillRect(sX + 6, floorSlabY - 110, 33, 4); ctx.fillRect(sX + 66, floorSlabY - 110, 33, 4);
 
     } else if (themeName === 'Subterranean Bunker') {
-      // 🛏️ Military Cot & Ham Radio Station
+      // 🛏️ Military Cot standing on floor slab
       const bX = WALL_THICKNESS + 40;
-      ctx.fillStyle = '#201814'; ctx.fillRect(bX, floorY + 115, 80, 32);
-      ctx.fillStyle = '#A1887F'; ctx.fillRect(bX + 4, floorY + 110, 72, 8);
+      ctx.fillStyle = '#201814'; ctx.fillRect(bX, floorSlabY - 30, 80, 30);
+      ctx.fillStyle = '#706254'; ctx.fillRect(bX + 4, floorSlabY - 36, 72, 6);
 
     } else if (themeName === 'Sub-Zero Cryo Chamber') {
-      // 🧊 Cryogenic Stasis Pod
+      // 🧊 Cryogenic Stasis Pod standing on floor slab
       const cryoX = BUILDING_WIDTH / 2 - 25;
-      ctx.fillStyle = '#0F2433'; ctx.fillRect(cryoX, floorY + 25, 50, 122);
-      ctx.strokeStyle = '#00E5FF'; ctx.lineWidth = 2; ctx.strokeRect(cryoX, floorY + 25, 50, 122);
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.7)'; ctx.fillRect(cryoX + 8, floorY + 38, 34, 75);
+      ctx.fillStyle = '#0F2433'; ctx.fillRect(cryoX, floorSlabY - 118, 50, 118);
+      ctx.strokeStyle = '#3D6878'; ctx.lineWidth = 2; ctx.strokeRect(cryoX, floorSlabY - 118, 50, 118);
+      ctx.fillStyle = 'rgba(61, 104, 120, 0.6)'; ctx.fillRect(cryoX + 8, floorSlabY - 105, 34, 75);
 
     } else {
-      // Central Vault Hub / High Vault
+      // Central Vault Hub Door standing on floor slab
       const vX = BUILDING_WIDTH / 2 - 35;
-      ctx.fillStyle = '#2B2217'; ctx.fillRect(vX, floorY + 20, 70, 128);
-      ctx.strokeStyle = '#FFAB00'; ctx.lineWidth = 2; ctx.strokeRect(vX, floorY + 20, 70, 128);
-      ctx.fillStyle = '#FFAB00'; ctx.beginPath(); ctx.arc(vX + 35, floorY + 84, 20, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2B2217'; ctx.fillRect(vX, floorSlabY - 120, 70, 120);
+      ctx.strokeStyle = '#C5A059'; ctx.lineWidth = 2; ctx.strokeRect(vX, floorSlabY - 120, 70, 120);
+      ctx.fillStyle = '#C5A059'; ctx.beginPath(); ctx.arc(vX + 35, floorSlabY - 60, 20, 0, Math.PI * 2); ctx.fill();
     }
 
     ctx.restore();
@@ -530,37 +548,54 @@ export class Renderer {
     const oy = obj.y;
 
     if (obj.type === 'security_camera') {
-      // 📹 Security Camera vector graphics
+      // 📹 Security Camera vector graphics & ON/OFF cycle
+      const cycle = ((Date.now() / 1000) + ox * 0.1) % 6.0;
+      const isCameraOff = cycle >= 4.0;
+
       ctx.fillStyle = '#1A1D24';
       ctx.fillRect(ox + 4, oy, 24, 12);
       ctx.fillStyle = '#2A2E3D';
       ctx.fillRect(ox + 8, oy + 12, 16, 16);
 
-      // Red Flashing Sensor Lens
-      const pulse = Math.floor(Date.now() / 250) % 2 === 0;
-      ctx.fillStyle = pulse ? '#FF0844' : '#700018';
-      ctx.beginPath();
-      ctx.arc(ox + 16, oy + 20, 4, 0, Math.PI * 2);
-      ctx.fill();
+      if (isCameraOff) {
+        // OFF Phase: Lens is dim grey, status LED blinks amber/cooling
+        const coolBlink = Math.floor(Date.now() / 300) % 2 === 0;
+        ctx.fillStyle = coolBlink ? '#A07038' : '#33281E';
+        ctx.beginPath(); ctx.arc(ox + 16, oy + 20, 4, 0, Math.PI * 2); ctx.fill();
 
-      // Sweeping Laser Cone Animation
-      const sweep = Math.sin(Date.now() / 450) * 32;
-      ctx.strokeStyle = 'rgba(0, 242, 254, 0.4)';
-      ctx.fillStyle = 'rgba(0, 242, 254, 0.09)';
-      ctx.beginPath();
-      ctx.moveTo(ox + 16, oy + 20);
-      ctx.lineTo(ox - 30 + sweep, oy + 110);
-      ctx.lineTo(ox + 62 + sweep, oy + 110);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+        // OFF Status Tag
+        ctx.fillStyle = 'rgba(160, 112, 56, 0.2)';
+        ctx.fillRect(ox - 10, oy - 14, 52, 12);
+        ctx.fillStyle = '#A07038';
+        ctx.font = '700 7px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('OFF / COOLING', ox + 16, oy - 5);
 
-      // Check if Player is inside camera laser detection beam
-      if (player && obj.active && Math.abs((ox + 16 + sweep) - (player.x + player.width / 2)) < 30 && Math.abs((oy + 60) - (player.y + player.height / 2)) < 50) {
-        if (!player.isCameraSpotted) {
-          player.isCameraSpotted = true;
-          events.emit('timer:modify', { delta: 5, source: 'Spotted by Camera (+5s)' });
-          setTimeout(() => { if (player) player.isCameraSpotted = false; }, 2000);
+      } else {
+        // ON Phase: Active Scanning Beam & Red Sensor Lens
+        const pulse = Math.floor(Date.now() / 250) % 2 === 0;
+        ctx.fillStyle = pulse ? '#8A3E45' : '#4A1D22';
+        ctx.beginPath(); ctx.arc(ox + 16, oy + 20, 4, 0, Math.PI * 2); ctx.fill();
+
+        // Sweeping Laser Beam Cone
+        const sweep = Math.sin(Date.now() / 450) * 32;
+        ctx.strokeStyle = 'rgba(138, 62, 69, 0.4)';
+        ctx.fillStyle = 'rgba(138, 62, 69, 0.08)';
+        ctx.beginPath();
+        ctx.moveTo(ox + 16, oy + 20);
+        ctx.lineTo(ox - 30 + sweep, oy + 110);
+        ctx.lineTo(ox + 62 + sweep, oy + 110);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Check if Player is inside camera laser detection beam
+        if (player && obj.active && Math.abs((ox + 16 + sweep) - (player.x + player.width / 2)) < 30 && Math.abs((oy + 60) - (player.y + player.height / 2)) < 50) {
+          if (!player.isCameraSpotted) {
+            player.isCameraSpotted = true;
+            events.emit('timer:modify', { delta: 5, source: 'Spotted by Camera (+5s)' });
+            setTimeout(() => { if (player) player.isCameraSpotted = false; }, 2000);
+          }
         }
       }
 
@@ -581,25 +616,6 @@ export class Renderer {
       ctx.beginPath();
       ctx.arc(ox + 16, oy + 18, 3, 0, Math.PI * 2);
       ctx.fill();
-
-    } else if (obj.type === 'radio_station') {
-      // 📻 Radio Station Console
-      ctx.fillStyle = '#1E241E';
-      ctx.fillRect(ox, oy + 8, 34, 28);
-
-      // Antennas
-      ctx.strokeStyle = '#A5C5A0';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(ox + 8, oy + 8);
-      ctx.lineTo(ox + 2, oy - 8);
-      ctx.moveTo(ox + 26, oy + 8);
-      ctx.lineTo(ox + 32, oy - 8);
-      ctx.stroke();
-
-      // Pulsating Frequency Wave LED
-      ctx.fillStyle = '#00E676';
-      ctx.fillRect(ox + 6, oy + 14, 22, 6);
 
     } else if (obj.type === 'bomb_device') {
       // 💣 Bomb Explosive Charge (Floor 1)
@@ -717,24 +733,82 @@ export class Renderer {
       ctx.font = '700 8px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('DIAMOND CHEST', ox + 18, floatY - 12);
+
+    } else if (obj.type === 'express_elevator') {
+      // 🛗 Express Elevator Shaft Doors
+      ctx.fillStyle = '#161D28';
+      ctx.fillRect(ox, oy, 44, 76);
+      ctx.strokeStyle = '#5C7C99';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(ox, oy, 44, 76);
+
+      // Bronze Metallic Split Doors
+      ctx.fillStyle = '#2A3545';
+      ctx.fillRect(ox + 4, oy + 8, 16, 64);
+      ctx.fillRect(ox + 24, oy + 8, 16, 64);
+      ctx.strokeStyle = '#C5A059'; ctx.lineWidth = 1;
+      ctx.strokeRect(ox + 4, oy + 8, 16, 64);
+      ctx.strokeRect(ox + 24, oy + 8, 16, 64);
+
+      // Digital Floor Indicator Header
+      ctx.fillStyle = '#0D131C';
+      ctx.fillRect(ox + 6, oy - 14, 32, 12);
+      ctx.fillStyle = '#5C7C99';
+      ctx.font = '700 8px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🛗 10-FL', ox + 22, oy - 5);
+
+    } else if (obj.type === 'moving_laser_barrier') {
+      // ⚡ Sweeping Laser Grid Hazard Emitter
+      const laserX = WALL_THICKNESS + 40 + (Math.sin(Date.now() * 0.003 + obj.y) + 1) * 120;
+      
+      // Laser Emitter Beam Line
+      ctx.strokeStyle = 'rgba(138, 62, 69, 0.7)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(laserX, oy - 60);
+      ctx.lineTo(laserX, oy + 45);
+      ctx.stroke();
+
+      // Warning Sensor Emitter Node
+      ctx.fillStyle = '#8A3E45';
+      ctx.beginPath(); ctx.arc(laserX, oy - 60, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(laserX, oy + 45, 5, 0, Math.PI * 2); ctx.fill();
     }
 
-    // Check Proximity Interaction Prompt for manual objects (Camera, Safe, Radio, Bomb)
+    // Check Proximity Interaction Prompt for manual objects (Elevator, Camera, Safe, Bomb)
     if (player && Math.abs(player.x - obj.x) < 45 && Math.abs(player.y - obj.y) < 30) {
-      if (['security_camera', 'safe_vault', 'radio_station', 'bomb_device'].includes(obj.type)) {
-        const promptLabel = obj.type === 'security_camera' ? '[E] SMASH (-3s)'
-          : obj.type === 'safe_vault' ? '[E] CRACK SAFE'
-          : obj.type === 'radio_station' ? '[E] REPORT RADIO (+6s)'
-          : '[E] DEFUSE BOMB (+45s)';
+      if (['express_elevator', 'security_camera', 'safe_vault', 'bomb_device'].includes(obj.type)) {
+        let promptLabel = '';
+        let strokeColor = '#C5A059';
 
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.fillRect(obj.x - 30, obj.y - 24, 96, 18);
-        ctx.strokeStyle = '#C5A059';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(obj.x - 30, obj.y - 24, 96, 18);
+        if (obj.type === 'express_elevator') {
+          promptLabel = '🛗 [E] EXPRESS ELEVATOR (10 FLOORS)';
+          strokeColor = '#5C7C99';
+        } else if (obj.type === 'security_camera') {
+          const cycle = ((Date.now() / 1000) + obj.x * 0.1) % 6.0;
+          const isCameraOff = cycle >= 4.0;
+          if (isCameraOff) {
+            promptLabel = '💥 [E] SMASH CAMERA (-3s)';
+            strokeColor = '#00E676';
+          } else {
+            promptLabel = '🔒 CAMERA ACTIVE (WAIT FOR OFF)';
+            strokeColor = '#8A3E45';
+          }
+        } else if (obj.type === 'safe_vault') {
+          promptLabel = '[E] CRACK SAFE';
+        } else {
+          promptLabel = '[E] DEFUSE BOMB (+45s)';
+        }
 
-        ctx.fillStyle = '#FFF';
-        ctx.font = '700 9px Inter, sans-serif';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.fillRect(obj.x - 55, obj.y - 24, 146, 18);
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(obj.x - 55, obj.y - 24, 146, 18);
+
+        ctx.fillStyle = strokeColor;
+        ctx.font = '700 8.5px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(promptLabel, obj.x + 18, obj.y - 12);
       }

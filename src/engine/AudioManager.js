@@ -390,6 +390,7 @@ export class AudioManager {
 
   playCoin() {
     this.ensureAudioContext();
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const osc1 = this.ctx.createOscillator();
     const osc2 = this.ctx.createOscillator();
@@ -409,6 +410,47 @@ export class AudioManager {
     osc1.stop(now + 0.08);
     osc2.start(now + 0.08);
     osc2.stop(now + 0.25);
+  }
+
+  playAlarm() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.setValueAtTime(400, now + 0.1);
+    osc.frequency.setValueAtTime(800, now + 0.2);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.32);
+  }
+
+  playCameraSmash() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.23);
   }
 
   // --- UNIQUE POWER-UP SOUND EFFECTS ---

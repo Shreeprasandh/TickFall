@@ -88,31 +88,6 @@ export class FloorGenerator {
             active: true
           });
         }
-
-        const radioX = getUniqueX();
-        if (radioX !== -1) {
-          objects.push({
-            id: `radio_${floorNumber}`,
-            type: 'radio_station',
-            x: radioX,
-            y: (i + 1) * FLOOR_HEIGHT - 48,
-            active: true
-          });
-        }
-      }
-
-      // 2. Radio Station: Spawned sparingly (every 10 floors, e.g. +90, +80... -80, -90)
-      if (Math.abs(floorNumber) % 10 === 0 && Math.abs(floorNumber) !== 1) {
-        const radioX = getUniqueX();
-        if (radioX !== -1) {
-          objects.push({
-            id: `radio_${floorNumber}`,
-            type: 'radio_station',
-            x: radioX,
-            y: (i + 1) * FLOOR_HEIGHT - 48,
-            active: true
-          });
-        }
       }
 
       // 3. Floating Power-Up Orbs: Rare, strategic spawn rate (~12% per floor / every ~8-10 floors)
@@ -158,7 +133,32 @@ export class FloorGenerator {
         }
       }
 
-      // 6. Security Cameras: Mounted on ceiling left or right corner (doesn't occupy floor zones)
+      // 6. Express Elevator Shafts: Spawned every 25 floors (e.g. +75, +50, +25... -25, -50, -75)
+      if (Math.abs(floorNumber) % 25 === 0 && Math.abs(floorNumber) !== 100) {
+        const eleX = getUniqueX();
+        if (eleX !== -1) {
+          objects.push({
+            id: `elevator_${floorNumber}`,
+            type: 'express_elevator',
+            x: eleX,
+            y: (i + 1) * FLOOR_HEIGHT - 80,
+            active: true
+          });
+        }
+      }
+
+      // 7. Moving Laser Grid Barriers: Spawned on high-security floors (every 8 floors)
+      if (Math.abs(floorNumber) % 8 === 0 && Math.abs(floorNumber) !== 1) {
+        objects.push({
+          id: `laser_barrier_${floorNumber}`,
+          type: 'moving_laser_barrier',
+          x: WALL_THICKNESS + 60,
+          y: (i + 1) * FLOOR_HEIGHT - 55,
+          active: true
+        });
+      }
+
+      // 8. Security Cameras: Mounted on ceiling left or right corner
       if (themeSpec.objectTypes.includes('security_camera') || rng.next() < 0.35) {
         objects.push({
           id: `cam_${floorNumber}`,

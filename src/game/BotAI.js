@@ -1,9 +1,9 @@
-// Solo Mode Bot AI with Easy, Medium, and Hard difficulty levels
+// Solo Mode Bot AI with balanced, enjoyable difficulty scaling so player can win comfortably
 
 import { BOT_DIFFICULTIES } from '../utils/constants.js';
 
 export class BotAI {
-  constructor(role = 'DETECTIVE', difficulty = 'MEDIUM') {
+  constructor(role = 'DETECTIVE', difficulty = 'EASY') {
     this.role = role; // 'THIEF' or 'DETECTIVE'
     this.difficulty = difficulty;
     this.targetX = 220;
@@ -22,27 +22,27 @@ export class BotAI {
       return this.inputState; // Human pause / mistake hesitation
     }
 
-    // AI decision rate & mistake frequency per difficulty
-    let reactionDelay = 0.35;
-    let mistakeChance = 0.25;
-    let speedThreshold = 18;
+    // AI decision rate & mistake frequency tuned for comfortable player wins
+    let reactionDelay = 0.65;
+    let mistakeChance = 0.40;
+    let speedThreshold = 24;
 
     if (this.difficulty === BOT_DIFFICULTIES.HARD) {
-      reactionDelay = 0.14;
-      mistakeChance = 0.08;
-      speedThreshold = 10;
-    } else if (this.difficulty === BOT_DIFFICULTIES.EASY) {
-      reactionDelay = 0.70;
-      mistakeChance = 0.45;
-      speedThreshold = 26; // Slower, wider turn radius
+      reactionDelay = 0.35;
+      mistakeChance = 0.20;
+      speedThreshold = 14;
+    } else if (this.difficulty === BOT_DIFFICULTIES.MEDIUM) {
+      reactionDelay = 0.50;
+      mistakeChance = 0.32;
+      speedThreshold = 20;
     }
 
     if (this.thinkTimer >= reactionDelay) {
       this.thinkTimer = 0;
 
-      // Occasional human mistake: bot hesitates for 0.5s - 1.1s
+      // Occasional human mistake: bot hesitates for 0.8s - 1.5s
       if (Math.random() < mistakeChance) {
-        this.hesitateTimer = this.difficulty === BOT_DIFFICULTIES.EASY ? 1.1 : 0.5;
+        this.hesitateTimer = 0.8 + Math.random() * 0.7;
       }
 
       this.decidePath(botEntity, opponentEntity, buildingFloors, timerSystem);
@@ -53,8 +53,8 @@ export class BotAI {
     if (Math.abs(dx) > speedThreshold) {
       if (dx < 0) this.inputState.left = true;
       else this.inputState.right = true;
-    } else if (this.role === 'DETECTIVE') {
-      // Near ceiling hole -> pulse grapple jump to climb up!
+    } else if (this.role === 'DETECTIVE' && Math.random() < 0.6) {
+      // Gentle grapple jump climb
       this.inputState.jump = true;
     }
 
@@ -78,20 +78,22 @@ export class BotAI {
         }
       }
 
-      // Interact with security cameras to smash (-3s time boost)
+      // Interact with security cameras during OFF cycle
       if (currentFloor.objects) {
         const cam = currentFloor.objects.find(o => o.type === 'security_camera' && o.active);
         if (cam) {
-          this.targetX = cam.x + cam.width / 2;
-          if (Math.abs(botEntity.x - cam.x) < 35) {
-            this.inputState.interact = true;
+          const cycle = ((Date.now() / 1000) + cam.x * 0.1) % 6.0;
+          if (cycle >= 4.0) {
+            this.targetX = cam.x + cam.width / 2;
+            if (Math.abs(botEntity.x - cam.x) < 35) {
+              this.inputState.interact = true;
+            }
           }
         }
       }
 
     } else {
-      // Detective AI Goal: Ascend UP toward Floor 1 / Bomb room or pursue Thief!
-      // In building array, lower floor index = higher floor (index 0 is Floor 40, index 39 is Floor 1)
+      // Detective AI Goal: Ascend UP toward Floor 1
       const floorAboveIdx = Math.max(0, currentFloorIdx - 1);
       const floorAbove = buildingFloors[floorAboveIdx];
 
@@ -100,27 +102,13 @@ export class BotAI {
         this.targetX = holeAbove.x + holeAbove.width / 2;
 
         if (Math.abs(botEntity.x + botEntity.width / 2 - this.targetX) < 45) {
-          this.inputState.jump = true; // Grapple up!
-        }
-      }
-
-      // Radio Station reporting (+6s time boost for Detective)
-      if (currentFloor.objects) {
-        const radio = currentFloor.objects.find(o => o.type === 'radio_station' && o.active);
-        if (radio) {
-          this.targetX = radio.x + radio.width / 2;
-          if (Math.abs(botEntity.x - radio.x) < 35) {
-            this.inputState.interact = true;
-          }
+          this.inputState.jump = true;
         }
       }
 
       // Pursue Thief if nearby
       if (opponentEntity && Math.abs(opponentEntity.currentFloorIndex - botEntity.currentFloorIndex) <= 1) {
         this.targetX = opponentEntity.x + opponentEntity.width / 2;
-        if (Math.abs(botEntity.x - opponentEntity.x) < 35) {
-          this.inputState.interact = true;
-        }
       }
     }
   }
