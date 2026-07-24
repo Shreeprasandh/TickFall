@@ -1,0 +1,9 @@
+{
+  "name": "The Heist Clock — TickFall",
+  "short_name": "HeistClock",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0A0C10",
+  "theme_color": "#00F2FE",
+  "description": "Asymmetric split-screen 1v1 action web game"
+}

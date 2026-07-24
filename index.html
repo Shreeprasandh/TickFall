@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TickFall — Asymmetric Split-Screen Chronometer</title>
+
+  <!-- Google Fonts: Luxury Editorial & Clean Architecture -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+  <!-- Top-Right Global Quick Controls (Speaker Mute + Info) -->
+  <div class="top-right-controls">
+    <button id="btnMuteAudio" class="icon-control-btn" title="Toggle Audio" aria-label="Mute Audio">
+      <svg id="iconVolume" class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      </svg>
+    </button>
+    <button id="btnOpenInfo" class="icon-control-btn" title="Game Info & Controls" aria-label="Game Info">
+      <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Bottom-Left Story Text Link -->
+  <div class="bottom-left-controls">
+    <button id="btnOpenStory" class="text-link-btn">STORY</button>
+  </div>
+
+  <!-- Bottom-Right Feedback Text Link -->
+  <div class="bottom-right-controls">
+    <button id="btnOpenFeedback" class="text-link-btn">FEEDBACK</button>
+  </div>
+
+  <!-- Main Game Split-Screen Container -->
+  <div id="appContainer" class="app-container">
+    
+    <!-- LEFT PANEL: THIEF (CIPHER) -->
+    <div class="game-panel left-panel">
+      <div class="panel-header thief-header">
+        <div class="role-identity">
+          <span class="role-dot thief-dot"></span>
+          <span class="role-name">CIPHER</span>
+          <span class="role-title">OPERATIVE</span>
+        </div>
+        <span class="goal-indicator">DESCENT — FL 40 → 1</span>
+      </div>
+      <canvas id="leftCanvas" width="480" height="720"></canvas>
+    </div>
+
+    <!-- CENTER CHRONOMETER DIVIDER -->
+    <div class="center-divider" id="clockContainer"></div>
+
+    <!-- RIGHT PANEL: DETECTIVE (VALE) -->
+    <div class="game-panel right-panel">
+      <div class="panel-header detective-header">
+        <div class="role-identity">
+          <span class="role-dot detective-dot"></span>
+          <span class="role-name">VALE</span>
+          <span class="role-title">INSPECTOR</span>
+        </div>
+        <span class="goal-indicator">PURSUIT — FL 1 → 40</span>
+      </div>
+      <canvas id="rightCanvas" width="480" height="720"></canvas>
+    </div>
+
+    <!-- Mobile Virtual Touch Controls -->
+    <div id="mobileOverlay" class="mobile-overlay"></div>
+  </div>
+
+  <!-- UI MAIN SCREENS -->
+  <div id="uiOverlay" class="ui-overlay">
+    
+    <!-- HOME SCREEN -->
+    <div id="homeScreen" class="screen home-screen">
+      <div class="hero-content">
+        <h1 class="main-title">TickFall</h1>
+        <p class="tagline">ONE DIAMOND • ONE BOMB • TWO STORIES • ONE CHRONOMETER</p>
+        <div class="title-divider"></div>
+
+        <!-- Center Profile Figure Icon Button -->
+        <button id="btnOpenProfile" class="profile-figure-btn" title="Operative Dossier & Settings">
+          <div class="figure-avatar">
+            <svg viewBox="0 0 64 64" fill="none" class="avatar-svg">
+              <path d="M32 12C24 12 18 18 18 26C18 31.5 21.5 36.2 26.5 38.5C18.5 41.5 12 49 12 58H52C52 49 45.5 41.5 37.5 38.5C42.5 36.2 46 31.5 46 26C46 18 40 12 32 12Z" fill="#E5DEC9" opacity="0.9"/>
+              <path d="M26 24H38V27H26V24Z" fill="#C5A059"/>
+            </svg>
+          </div>
+          <span class="figure-label">DOSSIER & SETTINGS</span>
+        </button>
+        
+        <div class="menu-button-group">
+          <button id="btnSoloMode" class="btn btn-primary">
+            PLAY SOLO MISSION
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOLO SETUP SCREEN -->
+    <div id="soloSetupScreen" class="screen solo-setup-screen hidden">
+      <div class="modal-card setup-card">
+        <div class="modal-header">
+          <h2>MISSION PARAMETERS</h2>
+          <span class="modal-subtitle">CONFIGURING CASTELLAN TOWER DESCENT</span>
+        </div>
+
+        <!-- Role Selection -->
+        <div class="setup-section">
+          <label class="section-label">OPERATIVE ASSIGNMENT</label>
+          <div class="options-grid">
+            <button class="option-card role-select-btn active" data-role="THIEF">
+              <div class="card-header-row">
+                <h4>CIPHER</h4>
+                <span class="badge-role">THIEF</span>
+              </div>
+              <p>Descend from Floor 40 with the Azure Diamond. Accelerate the chronometer to trigger explosion exit cover.</p>
+            </button>
+            <button class="option-card role-select-btn" data-role="DETECTIVE">
+              <div class="card-header-row">
+                <h4>VALE</h4>
+                <span class="badge-role gold">INSPECTOR</span>
+              </div>
+              <p>Ascend from Floor 1. Delay the chronometer, disarm the bomb device, and arrest Cipher before escape.</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bot Difficulty -->
+        <div class="setup-section">
+          <label class="section-label">OPPONENT TACTICAL GRADE</label>
+          <div class="button-row">
+            <button class="diff-select-btn" data-diff="EASY">STANDARD</button>
+            <button class="diff-select-btn active" data-diff="MEDIUM">TACTICAL</button>
+            <button class="diff-select-btn" data-diff="HARD">ELITE</button>
+          </div>
+        </div>
+
+        <!-- Session Time Frame -->
+        <div class="setup-section">
+          <label class="section-label">MATCH DURATION PRESET</label>
+          <div class="button-row">
+            <button class="time-select-btn" data-frame="SHORT">EXPRESS (7m)</button>
+            <button class="time-select-btn active" data-frame="STANDARD">BALANCED (14m)</button>
+            <button class="time-select-btn" data-frame="EXTENDED">EXTENDED (21m)</button>
+          </div>
+        </div>
+
+        <div class="setup-footer">
+          <button class="btn btn-back">CANCEL</button>
+          <button id="btnStartSoloGame" class="btn btn-primary">INITIATE HEIST</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME HUD SCREEN -->
+    <div id="gameHud" class="screen game-hud hidden"></div>
+
+    <!-- RESULTS SCREEN (Editorial Vintage Press Edition) -->
+    <div id="resultsScreen" class="screen results-screen hidden">
+      <div class="newspaper-card">
+        <div class="newspaper-header">
+          <div class="newspaper-meta-top">
+            <span>VOL. CXIV NO. 48,209</span>
+            <span>THE CASTELLAN DAILY NEWS</span>
+            <span>FINAL EVENING EDITION</span>
+          </div>
+          <div class="newspaper-rule-double"></div>
+        </div>
+
+        <div class="headline-container">
+          <h3 id="resultsWinnerRole" class="winner-kicker">CIPHER VICTORY</h3>
+          <h1 id="resultsHeadline" class="main-headline">AZURE DIAMOND VANISHES IN CASTELLAN TOWER BLAST</h1>
+          <div class="headline-rule"></div>
+          <p id="resultsSubhead" class="story-lead">Cipher descended 40 floors while Inspector Vale fought against the ticking bomb clock.</p>
+        </div>
+
+        <div class="results-actions">
+          <button id="btnPlayAgain" class="btn btn-primary">RETRY MISSION</button>
+          <button class="btn btn-back">RETURN TO MENU</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROOT-LEVEL OVERLAY MODALS (Z-INDEX 2000) -->
+
+  <!-- INFO & CONTROLS POPUP -->
+  <div id="infoModal" class="modal-overlay hidden">
+    <div class="modal-card info-card">
+      <div class="modal-header">
+        <h2>OPERATIVE MANUAL & CONTROLS</h2>
+        <span class="modal-subtitle">TICKFALL MECHANICS OVERVIEW</span>
+      </div>
+      
+      <div class="spacious-content">
+        <div class="info-block">
+          <h4>⏱️ THE CHRONOMETER SYSTEM</h4>
+          <p>Both players fight over ONE shared countdown clock.</p>
+          <ul class="manual-list">
+            <li><strong>Cipher (Thief):</strong> Smash cameras (-3s), crack safes (-4s), and stomp down 40 floors to hit 0:00 or reach exit.</li>
+            <li><strong>Vale (Inspector):</strong> Report at radio stations (+6s), check CCTV (+2s), and disarm the Floor 1 bomb (+45s) to arrest Cipher.</li>
+          </ul>
+        </div>
+
+        <div class="info-block">
+          <h4>⌨️ CONTROLS</h4>
+          <div class="controls-grid">
+            <div class="control-column">
+              <h5>CIPHER (LEFT)</h5>
+              <p><code>A</code>/<code>D</code> — Left/Right</p>
+              <p><code>W</code>/<code>Space</code> — Jump</p>
+              <p><code>S</code> — Stomp Floor</p>
+              <p><code>E</code> — Interact</p>
+            </div>
+            <div class="control-column">
+              <h5>VALE (RIGHT)</h5>
+              <p><code>←</code>/<code>→</code> — Left/Right</p>
+              <p><code>↑</code>/<code>Space</code> — Grapple UP</p>
+              <p><code>↓</code> — Slide</p>
+              <p><code>Enter</code> — Interact</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-back modal-close-btn" data-modal="infoModal">CLOSE MANUAL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SINGLE-SCREEN STORY POPUP (NO SCROLL NEEDED) -->
+  <div id="storyModal" class="modal-overlay hidden">
+    <div class="modal-card story-card single-screen-card">
+      <div class="modal-header">
+        <h2>THE CASTELLAN TOWER PROLOGUE</h2>
+        <span class="modal-subtitle">TWO PATHS • ONE FATE</span>
+      </div>
+
+      <div class="spacious-content narrative-text single-screen-text">
+        <p>Ten years ago, <strong>Cipher</strong> and <strong>Vale</strong> were the city’s finest intelligence partners until a syndicate corruption scandal tore them apart. Vale chose the badge and the law; Cipher chose the shadows and vigilante justice.</p>
+        <p>Tonight, their paths collide at Castellan Tower. Cipher breached the penthouse for the Azure Diamond—the final evidence to expose the syndicate—and set a timed charge on Floor 1 to cover their escape. Vale decoded the alert and charged into the lobby, desperate to disarm the bomb and stop his former partner before either reaches the point of no return.</p>
+        <p class="story-cliffhanger">Cipher prepares to descend 40 floors. Vale rushes upward to disarm the device. Neither will yield—how this story ends depends on you.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-back modal-close-btn" data-modal="storyModal">CLOSE STORY</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK POPUP -->
+  <div id="feedbackModal" class="modal-overlay hidden">
+    <div class="modal-card feedback-card">
+      <div class="modal-header">
+        <h2>PLAYER FEEDBACK</h2>
+        <span class="modal-subtitle">SHARE YOUR INSIGHTS & SUGGESTIONS</span>
+      </div>
+
+      <div class="spacious-content">
+        <div class="form-group">
+          <label class="form-label">YOUR FEEDBACK</label>
+          <textarea id="feedbackInput" class="form-textarea" placeholder="Tell us your thoughts, game balance suggestions, or bugs encountered..." rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-back modal-close-btn" data-modal="feedbackModal">CANCEL</button>
+        <button id="btnSubmitFeedback" class="btn btn-primary">SUBMIT FEEDBACK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMBINED PROFILE, DOSSIER & SETTINGS POPUP -->
+  <div id="profileModal" class="modal-overlay hidden">
+    <div class="modal-card profile-dossier-card">
+      <div class="modal-header">
+        <h2>OPERATIVE DOSSIER & SETTINGS</h2>
+        <span class="modal-subtitle">PERSONAL RECORD & GAME PREFERENCES</span>
+      </div>
+
+      <div class="spacious-content">
+        <!-- Alias Editing -->
+        <div class="dossier-section">
+          <label class="section-label">OPERATIVE ALIAS</label>
+          <input type="text" id="operativeNameInput" class="form-input" value="OPERATIVE_40" maxlength="20">
+        </div>
+
+        <!-- Career Statistics -->
+        <div class="dossier-section">
+          <label class="section-label">CAREER STATISTICS</label>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-num" id="statGamesPlayed">0</span>
+              <span class="stat-lbl">MISSIONS</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="statThiefWins">0</span>
+              <span class="stat-lbl">CIPHER ESCAPES</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="statDetectiveWins">0</span>
+              <span class="stat-lbl">VALE ARRESTS</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num" id="statVaultCoins">250</span>
+              <span class="stat-lbl">VAULT COINS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audio & Game Settings -->
+        <div class="dossier-section">
+          <label class="section-label">AUDIO PREFERENCES</label>
+          <div class="setting-row">
+            <label>SFX VOLUME</label>
+            <input type="range" id="soundSlider" min="0" max="100" value="80">
+          </div>
+          <div class="setting-row">
+            <label>SYNTH MUSIC VOLUME</label>
+            <input type="range" id="musicSlider" min="0" max="100" value="70">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn" data-modal="profileModal">SAVE & CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

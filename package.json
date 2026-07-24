@@ -1,0 +1,12 @@
+{
+  "name": "tickfall-heist-clock",
+  "version": "1.0.0",
+  "description": "The Heist Clock — Split-screen 1v1 asymmetric action game",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "npx serve ./"
+  },
+  "keywords": ["game", "canvas", "javascript", "heist", "countdown"],
+  "author": "",
+  "license": "MIT"
+}
