@@ -118,6 +118,16 @@ export class UIManager {
       };
     }
 
+    const btnLeaderboard = document.getElementById('btnOpenLeaderboard');
+    if (btnLeaderboard) {
+      btnLeaderboard.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        this.renderLeaderboard();
+        this.openModal('leaderboardModal');
+      };
+    }
+
     // Close buttons for modals
     document.querySelectorAll('.modal-close-btn').forEach(btn => {
       btn.onclick = (e) => {
@@ -147,6 +157,18 @@ export class UIManager {
       btnSolo.onclick = () => {
         this.safePlay(() => audioManager.playClick());
         this.switchScreen(GAME_STATES.SOLO_SETUP);
+      };
+    }
+
+    // Multiplayer Mode Flow
+    const btnMultiplayer = document.getElementById('btnMultiplayerMode');
+    if (btnMultiplayer) {
+      btnMultiplayer.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        this.switchScreen(GAME_STATES.PLAYING);
+        if (window.gameEngine) {
+          window.gameEngine.startMultiplayerGame('STANDARD');
+        }
       };
     }
 
@@ -210,6 +232,10 @@ export class UIManager {
     }
 
     events.on('game:over', (data) => {
+      if (window.gameEngine && window.gameEngine.mode === 'SOLO' && window.gameEngine.timerSystem) {
+        const playerAlias = localStorage.getItem('TICKFALL_OPERATIVE_NAME') || 'OPERATIVE_40';
+        StorageManager.recordSoloScore(playerAlias, data.winner, window.gameEngine.timerSystem.elapsedSeconds);
+      }
       this.renderResults(data);
       this.switchScreen(GAME_STATES.RESULTS);
     });
@@ -217,12 +243,43 @@ export class UIManager {
 
   openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+    }
   }
 
   closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('hidden');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.add('hidden');
+    }
+  }
+
+  renderLeaderboard() {
+    const tbody = document.getElementById('leaderboardTbody');
+    if (!tbody) return;
+
+    const records = StorageManager.getSoloLeaderboard();
+    tbody.innerHTML = records.map((rec, index) => {
+      const mins = Math.floor(rec.timeSeconds / 60);
+      const secs = (rec.timeSeconds % 60).toFixed(2);
+      const timeStr = `${mins}:${secs.padStart(5, '0')}s`;
+      const rankStr = index === 0 ? '🥇 #1' : index === 1 ? '🥈 #2' : index === 2 ? '🥉 #3' : `#${index + 1}`;
+      const roleBadge = rec.role === 'THIEF' 
+        ? '<span class="badge-role">CIPHER</span>' 
+        : '<span class="badge-role gold">VALE</span>';
+
+      return `
+        <tr>
+          <td class="rank-badge">${rankStr}</td>
+          <td><strong>${rec.name}</strong></td>
+          <td>${roleBadge}</td>
+          <td class="time-highlight">${timeStr}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
   switchScreen(screenState) {

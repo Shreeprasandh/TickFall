@@ -54,37 +54,37 @@ body, html {
 }
 
 .icon-control-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
-  width: clamp(34px, 4vw, 40px);
-  height: clamp(34px, 4vw, 40px);
+  width: clamp(28px, 3vw, 32px);
+  height: clamp(28px, 3vw, 32px);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-primary);
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.35;
   transition: all 0.2s ease;
 }
 
 .icon-control-btn:hover {
-  opacity: 1.0;
+  opacity: 0.85;
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
 .icon-control-btn.muted {
-  color: rgba(255, 255, 255, 0.35) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  opacity: 0.45 !important;
-  background: rgba(0, 0, 0, 0.2) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.28 !important;
+  background: transparent !important;
 }
 
 .control-svg {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
 }
 
 /* Bottom Floating Text Buttons (Story & Feedback) */
@@ -113,13 +113,27 @@ body, html {
   font-weight: 600;
   letter-spacing: 2px;
   cursor: pointer;
-  opacity: 0.7;
+  opacity: 0.45;
   transition: all 0.2s ease;
   padding: 4px 8px;
 }
 
 .text-link-btn:hover {
-  opacity: 1.0;
+  opacity: 0.85;
+  color: var(--gold-accent);
+}
+
+.sub-menu-text-link {
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.45;
+  margin-top: 4px;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.sub-menu-text-link:hover {
+  opacity: 0.85;
   color: var(--gold-accent);
 }
 
@@ -350,6 +364,7 @@ body, html {
   letter-spacing: 4px;
   color: var(--text-primary);
   margin-bottom: 8px;
+  text-shadow: none;
 }
 
 .tagline {
@@ -358,6 +373,7 @@ body, html {
   letter-spacing: 2px;
   margin-bottom: 16px;
   font-weight: 400;
+  text-shadow: none;
 }
 
 .title-divider {
@@ -365,6 +381,7 @@ body, html {
   height: 1px;
   background: var(--gold-accent);
   margin: 0 auto 20px auto;
+  box-shadow: none;
 }
 
 /* Redesigned Borderless 3D Thief Profile Emblem Button */
@@ -400,6 +417,12 @@ body, html {
 .thief-3d-svg {
   width: 56px;
   height: 56px;
+  opacity: 0.7;
+  transition: opacity 0.25s ease;
+}
+
+.profile-3d-btn:hover .thief-3d-svg {
+  opacity: 1;
 }
 
 .profile-name-subtext {
@@ -617,6 +640,19 @@ body, html {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
 /* Options Grid for Solo Setup */
 .options-grid {
   display: grid;
@@ -789,4 +825,48 @@ body, html {
     margin-bottom: 16px;
     padding: 8px 16px;
   }
+}
+
+/* Leaderboard Table Custom Modal Styling */
+.leaderboard-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  text-align: left;
+}
+
+.leaderboard-table th {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 10px 12px;
+}
+
+.leaderboard-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.leaderboard-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rank-badge {
+  font-weight: 700;
+  color: var(--gold-accent);
+}
+
+.time-highlight {
+  font-family: var(--font-num);
+  font-weight: 700;
+  color: var(--ivory-primary);
 }

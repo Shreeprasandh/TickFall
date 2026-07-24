@@ -81,6 +81,27 @@ export class GameEngine {
     }
   }
 
+  startMultiplayerGame(timeFrameKey = 'STANDARD') {
+    this.playerRole = ROLES.THIEF;
+    this.timeFrameKey = timeFrameKey;
+    this.mode = 'MULTIPLAYER';
+    this.botAI = null;
+
+    this.buildingFloors = FloorGenerator.generateBuilding(Date.now());
+    this.thief.reset();
+    this.detective.reset();
+    this.timerSystem.reset(timeFrameKey);
+
+    this.gameState = GAME_STATES.PLAYING;
+    audioManager.startMusic();
+
+    if (!this.isRunning) {
+      this.isRunning = true;
+      this.lastTime = performance.now();
+      requestAnimationFrame((t) => this.loop(t));
+    }
+  }
+
   loop(currentTime) {
     if (!this.isRunning) return;
 

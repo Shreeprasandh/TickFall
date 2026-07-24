@@ -92,4 +92,32 @@ export class StorageManager {
     StorageManager.save(data);
     return data;
   }
+
+  static getSoloLeaderboard() {
+    const data = StorageManager.load();
+    const defaultLeaderboard = [
+      { name: 'CIPHER_ALPHA', role: 'THIEF', timeSeconds: 34.12 },
+      { name: 'INSPECTOR_VALE', role: 'DETECTIVE', timeSeconds: 36.85 },
+      { name: 'SHADOW_CIPHER', role: 'THIEF', timeSeconds: 41.20 },
+      { name: 'AGENT_K', role: 'DETECTIVE', timeSeconds: 43.65 },
+      { name: 'GHOST_RUNNER', role: 'THIEF', timeSeconds: 45.10 },
+      { name: 'SILENT_STRIKER', role: 'DETECTIVE', timeSeconds: 48.30 },
+      { name: 'CHRONO_ROGUE', role: 'THIEF', timeSeconds: 50.15 },
+      { name: 'TOWER_GUARDIAN', role: 'DETECTIVE', timeSeconds: 52.40 },
+      { name: 'CIPHER_DELTA', role: 'THIEF', timeSeconds: 55.80 },
+      { name: 'VALE_SCOUT', role: 'DETECTIVE', timeSeconds: 58.90 }
+    ];
+
+    const userScores = data.soloLeaderboard || [];
+    const combined = [...userScores, ...defaultLeaderboard];
+    combined.sort((a, b) => a.timeSeconds - b.timeSeconds);
+    return combined.slice(0, 10);
+  }
+
+  static recordSoloScore(name, role, timeSeconds) {
+    const data = StorageManager.load();
+    if (!data.soloLeaderboard) data.soloLeaderboard = [];
+    data.soloLeaderboard.push({ name, role, timeSeconds: parseFloat(timeSeconds.toFixed(2)) });
+    StorageManager.save(data);
+  }
 }

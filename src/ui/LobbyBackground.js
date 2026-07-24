@@ -155,7 +155,7 @@ export class LobbyBackground {
     if (this.animState === 'THIEF_FLY') {
       this.updateThiefSequence(dt);
     } else if (this.animState === 'PAUSE_AFTER_THIEF') {
-      if (this.stateTimer > 2.5) {
+      if (this.stateTimer > 3.5) {
         this.animState = 'SEARCHLIGHTS';
         this.stateTimer = 0;
         this.searchlights.forEach(s => s.active = true);
@@ -163,14 +163,14 @@ export class LobbyBackground {
     } else if (this.animState === 'SEARCHLIGHTS') {
       this.updateSearchlightsSequence(dt);
     } else if (this.animState === 'PAUSE_AFTER_LIGHTS') {
-      if (this.stateTimer > 3.0) {
+      if (this.stateTimer > 4.0) {
         this.animState = 'DETECTIVE_PURSUIT';
         this.stateTimer = 0;
       }
     } else if (this.animState === 'DETECTIVE_PURSUIT') {
       this.updateDetectiveSequence(dt);
     } else if (this.animState === 'IDLE') {
-      if (this.stateTimer > 6.0) { // 6.0s spacious ambient pause between full cycles
+      if (this.stateTimer > 10.0) { // Spacious 10.0s ambient stillness between full cycles
         this.resetCinematic();
       }
     }

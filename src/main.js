@@ -1,6 +1,7 @@
 // Entry Point Bootstrap Module for TickFall
 
 import { GameEngine } from './engine/GameEngine.js';
+import { audioManager } from './engine/AudioManager.js';
 import { ClockDisplay } from './ui/components/ClockDisplay.js';
 import { BombPuzzleModal } from './ui/components/BombPuzzleModal.js';
 import { FenceShopModal } from './ui/components/FenceShopModal.js';
@@ -27,7 +28,18 @@ const initApp = () => {
   const gameEngine = new GameEngine(leftCanvas, rightCanvas);
   window.gameEngine = gameEngine;
 
-  console.log('⏱️ TickFall — Living Engine Initialized Successfully!');
+  // Unlock Web Audio & Start Ambient Thriller Music Notes in Lobby on First Interaction
+  const unlockLobbyAudio = () => {
+    audioManager.startMusic();
+    window.removeEventListener('click', unlockLobbyAudio);
+    window.removeEventListener('keydown', unlockLobbyAudio);
+    window.removeEventListener('pointerdown', unlockLobbyAudio);
+  };
+  window.addEventListener('click', unlockLobbyAudio);
+  window.addEventListener('keydown', unlockLobbyAudio);
+  window.addEventListener('pointerdown', unlockLobbyAudio);
+
+  console.log('⏱️ TickFall — Living Engine & Audio Initialized Successfully!');
 };
 
 // Robust Module Bootstrap (Immediate execution if DOM already parsed)

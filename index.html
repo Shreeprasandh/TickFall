@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>TickFall — Asymmetric Split-Screen Chronometer</title>
+  <title>TickFall</title>
 
   <!-- Google Fonts: Luxury Editorial & Clean Architecture -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=1.0.3">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="stylesheet" href="css/style.css?v=1.0.6">
   <link rel="manifest" href="manifest.json">
 
   <!-- Immediate Fail-Safe Global Modal Handler Script -->
@@ -18,15 +20,15 @@
     window.openModal = function(modalId) {
       var modal = document.getElementById(modalId);
       if (modal) {
-        modal.classList.remove('hidden');
         modal.style.display = 'flex';
+        modal.classList.remove('hidden');
       }
     };
     window.closeModal = function(modalId) {
       var modal = document.getElementById(modalId);
       if (modal) {
-        modal.classList.add('hidden');
         modal.style.display = 'none';
+        modal.classList.add('hidden');
       }
     };
   </script>
@@ -78,14 +80,14 @@
 
       <!-- Top-Right Controls -->
       <div class="top-right-controls">
-        <button id="btnMuteAudio" class="icon-control-btn" title="Toggle Audio" aria-label="Mute Audio">
+        <button id="btnMuteAudio" class="icon-control-btn" aria-label="Mute Audio">
           <svg id="iconVolume" class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
           </svg>
         </button>
-        <button id="btnOpenInfo" class="icon-control-btn" onclick="window.openModal('infoModal')" title="Game Info & Controls" aria-label="Game Info">
+        <button id="btnOpenInfo" class="icon-control-btn" onclick="window.openModal('infoModal')" aria-label="Game Info">
           <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -109,28 +111,70 @@
         <p class="tagline">ONE DIAMOND • ONE BOMB • TWO STORIES • ONE CHRONOMETER</p>
         <div class="title-divider"></div>
 
-        <!-- Redesigned 3D Thief Profile Emblem Button -->
-        <button id="btnOpenProfile" class="profile-3d-btn" onclick="window.openModal('profileModal')" title="Operative Dossier & Settings">
+        <!-- Realistic Human Hand & Faint Blue Diamond Circular Icon -->
+        <button id="btnOpenProfile" class="profile-3d-btn" onclick="window.openModal('profileModal')">
           <div class="thief-3d-emblem">
-            <svg viewBox="0 0 80 80" fill="none" class="thief-3d-svg">
+            <svg viewBox="0 0 100 100" fill="none" class="thief-3d-svg">
               <defs>
-                <linearGradient id="coatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#E5DEC9"/>
-                  <stop offset="100%" stop-color="#8E8573"/>
+                <linearGradient id="realBgGradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#181B26"/>
+                  <stop offset="50%" stop-color="#0B0D13"/>
+                  <stop offset="100%" stop-color="#040508"/>
                 </linearGradient>
-                <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#C5A059"/>
-                  <stop offset="100%" stop-color="#FFF5D6"/>
+                <linearGradient id="realGoldRimMain" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FFF5D6"/>
+                  <stop offset="50%" stop-color="#C5A059"/>
+                  <stop offset="100%" stop-color="#735B28"/>
                 </linearGradient>
-                <filter id="shadow3d" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.6"/>
+                <linearGradient id="realSkinGradMain" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#EBD8C3"/>
+                  <stop offset="35%" stop-color="#CBB196"/>
+                  <stop offset="70%" stop-color="#9C8065"/>
+                  <stop offset="100%" stop-color="#5E4935"/>
+                </linearGradient>
+                <linearGradient id="realDiamondGradMain" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#E2FBFF"/>
+                  <stop offset="40%" stop-color="#5CE0FF"/>
+                  <stop offset="100%" stop-color="#00A5DC"/>
+                </linearGradient>
+                <filter id="realCyanReflectMain" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
                 </filter>
               </defs>
-              <g filter="url(#shadow3d)">
-                <path d="M40 8C26 8 16 18 16 32C16 41 21 48 28 52V68H52V52C59 48 64 41 64 32C64 18 54 8 40 8Z" fill="#141720"/>
-                <path d="M26 50L40 70L54 50" stroke="url(#coatGrad)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M24 28C24 20 31 16 40 16C49 16 56 20 56 28C56 38 49 44 40 44C31 44 24 38 24 28Z" fill="url(#coatGrad)"/>
-                <rect x="28" y="27" width="24" height="6" rx="3" fill="url(#visorGrad)"/>
+              <g id="realisticHandIconMain">
+                <!-- Circle Background & Gold Border Ring -->
+                <circle cx="50" cy="50" r="46" fill="url(#realBgGradMain)" stroke="url(#realGoldRimMain)" stroke-width="2.5"/>
+                <!-- FAINT BLUE AZURE DIAMOND (RESTING IN PALM) -->
+                <g id="realAzureDiamondMain">
+                  <polygon points="50,18 68,30 50,52 32,30" fill="url(#realDiamondGradMain)" opacity="0.9"/>
+                  <polygon points="39,30 50,18 61,30 50,25" fill="#FFFFFF" opacity="0.95"/>
+                  <polygon points="32,30 39,30 50,52" fill="#0090C4" opacity="0.5"/>
+                  <polygon points="68,30 61,30 50,52" fill="#0090C4" opacity="0.5"/>
+                  <line x1="50" y1="18" x2="50" y2="52" stroke="#FFFFFF" stroke-width="1.2" opacity="0.75"/>
+                </g>
+                <!-- REALISTIC HUMAN HAND -->
+                <g id="realHumanHandMain">
+                  <path d="M 40 86 C 40 76, 38 68, 36 62 L 64 62 C 62 68, 60 76, 60 86 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 36 64 C 45 67, 55 67, 64 64" stroke="url(#realGoldRimMain)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                  <path d="M 36 62 C 34 54, 38 46, 50 46 C 62 46, 66 54, 64 62 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 64 60 C 72 56, 75 44, 70 38 C 67 40, 66 46, 62 52 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 62 55 C 72 48, 73 34, 66 28 C 63 31, 63 38, 60 46 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 58 50 C 70 42, 70 26, 62 20 C 58 24, 58 32, 54 42 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 54 48 C 64 40, 63 28, 56 24 C 53 27, 53 34, 50 42 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 38 58 C 28 52, 24 38, 30 30 C 33 30, 35 36, 38 42 Z" fill="url(#realSkinGradMain)"/>
+                  <path d="M 31 38 C 33 40, 35 41, 37 42" stroke="#5E4935" stroke-width="1" fill="none" opacity="0.6"/>
+                  <path d="M 56 31 C 58 33, 60 34, 61 35" stroke="#5E4935" stroke-width="1" fill="none" opacity="0.5"/>
+                  <path d="M 60 28 C 62 30, 64 31, 65 32" stroke="#5E4935" stroke-width="1" fill="none" opacity="0.5"/>
+                  <path d="M 64 35 C 66 37, 67 38, 68 39" stroke="#5E4935" stroke-width="1" fill="none" opacity="0.5"/>
+                  <path d="M 29 32 C 31 35, 33 39, 34 42" stroke="#FFFFFF" stroke-width="1.2" fill="none" opacity="0.45"/>
+                  <path d="M 54 26 C 52 30, 51 35, 49 40" stroke="#FFFFFF" stroke-width="1.2" fill="none" opacity="0.45"/>
+                  <path d="M 60 22 C 57 27, 56 32, 53 38" stroke="#FFFFFF" stroke-width="1" fill="none" opacity="0.35"/>
+                  <path d="M 40 44 C 46 42, 54 42, 58 46" stroke="#75E2FF" stroke-width="1.5" fill="none" opacity="0.6" filter="url(#realCyanReflectMain)"/>
+                </g>
               </g>
             </svg>
           </div>
@@ -141,7 +185,13 @@
         
         <div class="menu-button-group">
           <button id="btnSoloMode" class="btn btn-primary">
-            PLAY SOLO MISSION
+            SOLO MISSION
+          </button>
+          <button id="btnMultiplayerMode" class="btn btn-secondary">
+            MULTIPLAYER MISSION
+          </button>
+          <button id="btnOpenLeaderboard" class="text-link-btn sub-menu-text-link">
+            LEADERBOARD
           </button>
         </div>
       </div>
@@ -237,7 +287,7 @@
   <!-- ROOT-LEVEL OVERLAY MODALS (Z-INDEX 2000) -->
 
   <!-- INFO & CONTROLS POPUP -->
-  <div id="infoModal" class="modal-overlay hidden">
+  <div id="infoModal" class="modal-overlay hidden" style="display: none;">
     <div class="modal-card info-card">
       <div class="modal-header">
         <h2>OPERATIVE MANUAL & CONTROLS</h2>
@@ -276,13 +326,13 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-back modal-close-btn" data-modal="infoModal" onclick="window.closeModal('infoModal')">CLOSE MANUAL</button>
+        <button class="btn btn-secondary modal-close-btn" data-modal="infoModal" onclick="window.closeModal('infoModal')">CLOSE MANUAL</button>
       </div>
     </div>
   </div>
 
   <!-- SINGLE-SCREEN STORY POPUP -->
-  <div id="storyModal" class="modal-overlay hidden">
+  <div id="storyModal" class="modal-overlay hidden" style="display: none;">
     <div class="modal-card story-card single-screen-card">
       <div class="modal-header">
         <h2>THE CASTELLAN TOWER PROLOGUE</h2>
@@ -296,13 +346,13 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-back modal-close-btn" data-modal="storyModal" onclick="window.closeModal('storyModal')">CLOSE STORY</button>
+        <button class="btn btn-secondary modal-close-btn" data-modal="storyModal" onclick="window.closeModal('storyModal')">CLOSE STORY</button>
       </div>
     </div>
   </div>
 
   <!-- FEEDBACK POPUP -->
-  <div id="feedbackModal" class="modal-overlay hidden">
+  <div id="feedbackModal" class="modal-overlay hidden" style="display: none;">
     <div class="modal-card feedback-card">
       <div class="modal-header">
         <h2>PLAYER FEEDBACK</h2>
@@ -317,14 +367,14 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-back modal-close-btn" data-modal="feedbackModal" onclick="window.closeModal('feedbackModal')">CANCEL</button>
+        <button class="btn btn-secondary modal-close-btn" data-modal="feedbackModal" onclick="window.closeModal('feedbackModal')">CANCEL</button>
         <button id="btnSubmitFeedback" class="btn btn-primary">SUBMIT FEEDBACK</button>
       </div>
     </div>
   </div>
 
   <!-- COMBINED PROFILE, DOSSIER & SETTINGS POPUP -->
-  <div id="profileModal" class="modal-overlay hidden">
+  <div id="profileModal" class="modal-overlay hidden" style="display: none;">
     <div class="modal-card profile-dossier-card">
       <div class="modal-header">
         <h2>OPERATIVE DOSSIER & SETTINGS</h2>
@@ -377,10 +427,41 @@
 
       <div class="modal-footer">
         <button class="btn btn-primary modal-close-btn" data-modal="profileModal" onclick="window.closeModal('profileModal')">SAVE & CLOSE</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD CUSTOM POPUP MODAL -->
+  <div id="leaderboardModal" class="modal-overlay hidden" style="display: none;">
+    <div class="modal-card dossier-card">
+      <div class="modal-header">
+        <h2>SOLO MISSION LEADERBOARD</h2>
+        <span class="modal-subtitle">TOP 10 BEST COMPLETION TIMES (SOLO MODE)</span>
+      </div>
+
+      <div class="spacious-content">
+        <div class="leaderboard-table-container">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>RANK</th>
+                <th>OPERATIVE</th>
+                <th>ROLE</th>
+                <th>BEST TIME</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardTbody">
+              <!-- Dynamically rendered by UIManager -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary modal-close-btn" data-modal="leaderboardModal" onclick="window.closeModal('leaderboardModal')">CLOSE</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=1.0.3"></script>
+  <script type="module" src="src/main.js?v=1.0.6"></script>
 </body>
 </html>
