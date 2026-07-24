@@ -29,11 +29,9 @@ export class PhysicsEngine {
       entity.vx = -Math.abs(entity.vx) * 0.8; // Bounce left
     }
 
-    // Determine current floor index based on Y coordinate
-    // Floor 1 is at bottom (y = (TOTAL_FLOORS - 1) * FLOOR_HEIGHT)
-    // Floor 40 is at top (y = 0)
-    const floorIndex = Math.floor(entity.y / FLOOR_HEIGHT);
-    entity.currentFloorIndex = TOTAL_FLOORS - floorIndex; // 1 to 40
+    // Determine current floor index based on Y coordinate (0 to 199)
+    const floorIndex = Math.min(Math.max(Math.floor(entity.y / FLOOR_HEIGHT), 0), TOTAL_FLOORS - 1);
+    entity.currentFloorIndex = floorIndex <= 99 ? (100 - floorIndex) : (-(floorIndex - 99));
 
     // Reset grounded state before checking floor platforms
     entity.isGrounded = false;

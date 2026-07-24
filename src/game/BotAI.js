@@ -8,6 +8,7 @@ export class BotAI {
     this.difficulty = difficulty;
     this.targetX = 220;
     this.thinkTimer = 0;
+    this.hesitateTimer = 0;
     this.inputState = { left: false, right: false, jump: false, stomp: false, slide: false, interact: false };
   }
 
@@ -16,18 +17,40 @@ export class BotAI {
     if (!botEntity || !botEntity.active) return this.inputState;
 
     this.thinkTimer += 1 / 60;
+    if (this.hesitateTimer > 0) {
+      this.hesitateTimer -= 1 / 60;
+      return this.inputState; // Human pause / mistake hesitation
+    }
 
-    // AI decision rate depends on difficulty
-    const reactionDelay = this.difficulty === BOT_DIFFICULTIES.HARD ? 0.05 : (this.difficulty === BOT_DIFFICULTIES.MEDIUM ? 0.15 : 0.35);
+    // AI decision rate & mistake frequency per difficulty
+    let reactionDelay = 0.35;
+    let mistakeChance = 0.25;
+    let speedThreshold = 18;
+
+    if (this.difficulty === BOT_DIFFICULTIES.HARD) {
+      reactionDelay = 0.14;
+      mistakeChance = 0.08;
+      speedThreshold = 10;
+    } else if (this.difficulty === BOT_DIFFICULTIES.EASY) {
+      reactionDelay = 0.70;
+      mistakeChance = 0.45;
+      speedThreshold = 26; // Slower, wider turn radius
+    }
 
     if (this.thinkTimer >= reactionDelay) {
       this.thinkTimer = 0;
+
+      // Occasional human mistake: bot hesitates for 0.5s - 1.1s
+      if (Math.random() < mistakeChance) {
+        this.hesitateTimer = this.difficulty === BOT_DIFFICULTIES.EASY ? 1.1 : 0.5;
+      }
+
       this.decidePath(botEntity, opponentEntity, buildingFloors, timerSystem);
     }
 
     // Execute horizontal movement toward targetX
     const dx = this.targetX - (botEntity.x + botEntity.width / 2);
-    if (Math.abs(dx) > 10) {
+    if (Math.abs(dx) > speedThreshold) {
       if (dx < 0) this.inputState.left = true;
       else this.inputState.right = true;
     } else if (this.role === 'DETECTIVE') {

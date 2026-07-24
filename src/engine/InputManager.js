@@ -26,6 +26,8 @@ export class InputManager {
         events.emit('input:pause', { role: ROLES.THIEF });
       } else if (e.code === 'KeyO' || e.code === 'Numpad0') {
         events.emit('input:pause', { role: ROLES.DETECTIVE });
+      } else if (e.code === 'KeyM') {
+        events.emit('input:mute');
       }
 
       this.keys[e.code] = true;

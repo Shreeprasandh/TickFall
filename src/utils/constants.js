@@ -2,7 +2,8 @@
 
 export const CANVAS_WIDTH = 480;
 export const CANVAS_HEIGHT = 720;
-export const TOTAL_FLOORS = 40;
+export const TOTAL_FLOORS = 200; // 100 Positive Floors (+100 -> +1) + 100 Negative Floors (-1 -> -100)
+export const TARGET_FLOOR_INDEX = 99; // Floor +1 (Central Bomb Vault & Exit Hub)
 export const FLOOR_HEIGHT = 160;
 export const BUILDING_WIDTH = 440;
 export const WALL_THICKNESS = 20;

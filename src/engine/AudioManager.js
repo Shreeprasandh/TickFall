@@ -117,10 +117,9 @@ export class AudioManager {
         this.playInGameProceduralNote();
       }
 
-      // Dynamic BPM per track
       const baseBpm = this.track === 'LOBBY' ? 78 : 124;
       const currentBpm = baseBpm + (this.track === 'INGAME' ? this.intensity * 46 : 0);
-      const intervalMs = (60 / currentBpm) * 250; // 16th notes
+      const intervalMs = (60 / currentBpm) * 250;
       this.musicInterval = setTimeout(tick, intervalMs);
     };
 
@@ -137,10 +136,9 @@ export class AudioManager {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
 
-    // Arpeggiated Victory Chords
     const chord = winner === 'THIEF' 
-      ? [293.66, 369.99, 440.00, 587.33, 739.99] // D major triumph
-      : [220.00, 277.18, 329.63, 440.00, 554.37]; // A major triumph
+      ? [293.66, 369.99, 440.00, 587.33, 739.99]
+      : [220.00, 277.18, 329.63, 440.00, 554.37];
 
     chord.forEach((freq, idx) => {
       const osc = this.ctx.createOscillator();
@@ -162,7 +160,6 @@ export class AudioManager {
   }
 
   setIntensity(percentRemaining) {
-    // percentRemaining: 1.0 (start) down to 0 (critical)
     this.intensity = clamp(1.0 - percentRemaining, 0, 1);
   }
 
@@ -170,13 +167,12 @@ export class AudioManager {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
 
-    // Atmospheric low pulse every 16 steps
     if (this.stepIndex % 16 === 0) {
       const bassOsc = this.ctx.createOscillator();
       const bassGain = this.ctx.createGain();
 
       bassOsc.type = 'sine';
-      bassOsc.frequency.setValueAtTime(73.42, now); // D2
+      bassOsc.frequency.setValueAtTime(73.42, now);
 
       bassGain.gain.setValueAtTime(0.2 * this.musicVolume, now);
       bassGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
@@ -188,7 +184,6 @@ export class AudioManager {
       bassOsc.stop(now + 1.25);
     }
 
-    // Soft Ambient Mystery Chime
     if (this.stepIndex % 4 === 0 && Math.random() < 0.6) {
       const melOsc = this.ctx.createOscillator();
       const melGain = this.ctx.createGain();
@@ -216,12 +211,11 @@ export class AudioManager {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
 
-    // High-Tension Bass Pulse every 8 steps
     if (this.stepIndex % 8 === 0) {
       const bassOsc = this.ctx.createOscillator();
       const bassGain = this.ctx.createGain();
 
-      const bassFreq = this.intensity > 0.6 ? 92.50 : 46.25; // F#2 or F#1
+      const bassFreq = this.intensity > 0.6 ? 92.50 : 46.25;
       bassOsc.type = this.intensity > 0.4 ? 'sawtooth' : 'triangle';
       bassOsc.frequency.setValueAtTime(bassFreq, now);
 
@@ -235,7 +229,6 @@ export class AudioManager {
       bassOsc.stop(now + 0.4);
     }
 
-    // Rapid Heist Arpeggiated Melody
     if (this.stepIndex % 2 === 0 || Math.random() < 0.4 + this.intensity * 0.4) {
       const melOsc = this.ctx.createOscillator();
       const melGain = this.ctx.createGain();
@@ -345,7 +338,6 @@ export class AudioManager {
     this.ensureAudioContext();
     const now = this.ctx.currentTime;
 
-    // Glass shatter noise + low thud
     const bufferSize = this.ctx.sampleRate * 0.15;
     const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -396,26 +388,6 @@ export class AudioManager {
     osc.stop(now + 0.22);
   }
 
-  playAlarm() {
-    this.ensureAudioContext();
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.setValueAtTime(440, now + 0.1);
-
-    gain.gain.setValueAtTime(0.4, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-
-    osc.connect(gain);
-    gain.connect(this.sfxGain);
-
-    osc.start(now);
-    osc.stop(now + 0.26);
-  }
-
   playCoin() {
     this.ensureAudioContext();
     const now = this.ctx.currentTime;
@@ -439,33 +411,139 @@ export class AudioManager {
     osc2.stop(now + 0.25);
   }
 
-  playExplosion() {
+  // --- UNIQUE POWER-UP SOUND EFFECTS ---
+
+  playPowerFloorBreaker() {
     this.ensureAudioContext();
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
-    const bufferSize = this.ctx.sampleRate * 0.8;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
 
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(800, now);
-    filter.frequency.linearRampToValueAtTime(80, now + 0.8);
-
+    // Sub-bass heavy drill blast & explosion crunch
+    const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.8, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.4);
 
-    noise.connect(filter);
-    filter.connect(gain);
+    gain.gain.setValueAtTime(0.7, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
+
+    osc.connect(gain);
     gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.43);
+  }
 
-    noise.start(now);
+  playPowerSuperGrapple() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // Rushing upward multi-note riser
+    const chord = [300, 450, 600, 900];
+    chord.forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.05);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.5, now + i * 0.05 + 0.15);
+
+      gain.gain.setValueAtTime(0.25, now + i * 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.15);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + i * 0.05);
+      osc.stop(now + i * 0.05 + 0.16);
+    });
+  }
+
+  playPowerTimeFreeze() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // Crystalline frozen bell arpeggio
+    const notes = [1046.50, 1318.51, 1567.98, 2093.00];
+    notes.forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.06);
+
+      gain.gain.setValueAtTime(0.3, now + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.5);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + i * 0.06);
+      osc.stop(now + i * 0.06 + 0.52);
+    });
+  }
+
+  playPowerSpeedSurge() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // High-frequency jet boost glide
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.25);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.26);
+  }
+
+  playPowerSonarReveal() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // Deep sonar ping radar pulse
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(440, now + 0.35);
+
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.36);
+  }
+
+  playPowerDiamondLoot() {
+    this.ensureAudioContext();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // Sparkling multi-note golden diamond chime
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+    notes.forEach((freq, i) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.04);
+
+      gain.gain.setValueAtTime(0.25, now + i * 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.4);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now + i * 0.04);
+      osc.stop(now + i * 0.04 + 0.42);
+    });
   }
 }
 

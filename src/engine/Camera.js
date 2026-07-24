@@ -6,7 +6,7 @@ import { CANVAS_HEIGHT, TOTAL_FLOORS, FLOOR_HEIGHT } from '../utils/constants.js
 export class Camera {
   constructor(isThief = true) {
     this.isThief = isThief; // Thief follows downward, Detective follows upward
-    this.y = isThief ? TOTAL_FLOORS * FLOOR_HEIGHT : 0;
+    this.y = isThief ? 0 : TOTAL_FLOORS * FLOOR_HEIGHT - CANVAS_HEIGHT;
     this.targetY = this.y;
     this.lerpSpeed = 0.12;
 

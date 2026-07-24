@@ -80,6 +80,12 @@ export class UIManager {
     // Initial Audio Mute Icon Sync Across All Buttons (Default Muted)
     this.updateAllMuteIcons(audioManager.isMuted);
 
+    // Mute Key 'M' Event Listener
+    events.on('input:mute', () => {
+      const isMuted = audioManager.toggleMute();
+      this.updateAllMuteIcons(isMuted);
+    });
+
     // Global Event Delegation for Mute & Pause Control Buttons
     document.addEventListener('click', (e) => {
       const pauseBtn = e.target.closest('.btn-pause-toggle, #btnPauseGameClock');

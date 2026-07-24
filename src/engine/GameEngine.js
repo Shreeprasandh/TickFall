@@ -258,7 +258,63 @@ export class GameEngine {
   }
 
   checkInteractions(thiefInputs, detectiveInputs) {
-    // Check Thief Object Interactions
+    // 1. Auto-claim floating power-up Orbs & rare Diamond Chests on proximity touch (instant activation!)
+    const charList = [
+      { char: this.thief, cam: this.leftCamera, particles: this.leftParticles, isThief: true },
+      { char: this.detective, cam: this.rightCamera, particles: this.rightParticles, isThief: false }
+    ];
+
+    charList.forEach(({ char, cam, particles, isThief }) => {
+      const fIdx = Math.min(Math.max(Math.floor(char.y / FLOOR_HEIGHT), 0), TOTAL_FLOORS - 1);
+      const floorObj = this.buildingFloors[fIdx];
+      if (floorObj && floorObj.objects) {
+        floorObj.objects.forEach(obj => {
+          if (!obj.active) return;
+          const dist = Math.hypot((char.x + char.width / 2) - (obj.x + 18), (char.y + char.height / 2) - (obj.y + 18));
+          if (dist < 42) {
+            if (obj.type === 'power_floor_breaker') {
+              obj.active = false;
+              // Instant 5-floor downward drill blast!
+              char.y = Math.min((TOTAL_FLOORS - 1) * FLOOR_HEIGHT, char.y + 5 * FLOOR_HEIGHT);
+              cam.shake(12);
+              particles.emit(char.x, char.y, 25, 'camera');
+              audioManager.playPowerFloorBreaker();
+              this.renderer.addFloatingText('⚡ 5-FLOOR DRILL BLAST!', char.x, char.y - 20, '#FF6D00', isThief ? 'left' : 'right');
+            } else if (obj.type === 'power_super_grapple') {
+              obj.active = false;
+              // Instant 5-floor upward super vault!
+              char.y = Math.max(0, char.y - 5 * FLOOR_HEIGHT);
+              cam.shake(10);
+              particles.emit(char.x, char.y, 25, 'pickup');
+              audioManager.playPowerSuperGrapple();
+              this.renderer.addFloatingText('🚀 5-FLOOR SUPER VAULT!', char.x, char.y - 20, '#00F2FE', isThief ? 'left' : 'right');
+            } else if (obj.type === 'power_time_freeze') {
+              obj.active = false;
+              audioManager.playPowerTimeFreeze();
+              this.timerSystem.modifyTime(isThief ? -5 : 5, 'Time Freeze');
+              this.renderer.addFloatingText('❄️ CHRONO LOCK (5s)!', char.x, char.y - 20, '#76E4F7', isThief ? 'left' : 'right');
+            } else if (obj.type === 'power_speed_surge') {
+              obj.active = false;
+              char.stealthTimer = 4.0;
+              audioManager.playPowerSpeedSurge();
+              this.renderer.addFloatingText('⚡ PHANTOM SPRINT!', char.x, char.y - 20, '#FFD700', isThief ? 'left' : 'right');
+            } else if (obj.type === 'power_sonar_reveal') {
+              obj.active = false;
+              audioManager.playPowerSonarReveal();
+              this.renderer.addFloatingText('📡 SONAR REVEAL!', char.x, char.y - 20, '#00E676', isThief ? 'left' : 'right');
+            } else if (obj.type === 'rare_diamond_chest') {
+              obj.active = false;
+              char.chips += 25;
+              particles.emit(char.x, char.y, 20, 'pickup');
+              audioManager.playPowerDiamondLoot();
+              this.renderer.addFloatingText('💎 +25 DIAMONDS!', char.x, char.y - 20, '#00E5FF', isThief ? 'left' : 'right');
+            }
+          }
+        });
+      }
+    });
+
+    // 2. Manual Object Interactions ([E] Key)
     if (thiefInputs.interact) {
       const floor = this.buildingFloors[Math.floor(this.thief.y / FLOOR_HEIGHT)];
       if (floor && floor.objects) {
@@ -276,15 +332,12 @@ export class GameEngine {
               this.timerSystem.modifyTime(TIMER_ACTIONS.SAFE_CRACK, 'Safe Cracked');
               audioManager.playCoin();
               this.leftParticles.emit(obj.x, obj.y, 15, 'pickup');
-            } else if (obj.type === 'the_fence') {
-              events.emit('shop:open', { role: 'THIEF' });
             }
           }
         });
       }
     }
 
-    // Check Detective Object Interactions
     if (detectiveInputs.interact) {
       const floor = this.buildingFloors[Math.floor(this.detective.y / FLOOR_HEIGHT)];
       if (floor && floor.objects) {
@@ -298,17 +351,21 @@ export class GameEngine {
               this.rightParticles.emit(obj.x, obj.y, 10, 'pickup');
             } else if (obj.type === 'bomb_device' && !this.detective.bombDiffused) {
               events.emit('puzzle:open');
-            } else if (obj.type === 'the_fence') {
-              events.emit('shop:open', { role: 'DETECTIVE' });
             }
           }
         });
       }
     }
 
-    // Check Win Condition: Thief reaches Floor 1 Ground Exit with Azure Diamond
-    if (this.thief.currentFloorIndex === 1 && this.thief.y >= (TOTAL_FLOORS - 1) * FLOOR_HEIGHT + 20) {
-      this.timerSystem.triggerWin('THIEF', 'CIPHER REACHED THE GROUND EXIT WITH THE AZURE DIAMOND!');
+    // Check Win Condition: First to reach Floor 1 Bomb Vault (index 39)
+    // Check Win Condition: First to reach Central Vault Hub (Floor +1 / Floor -1 junction)
+    const thiefFloor = Math.floor(this.thief.y / FLOOR_HEIGHT);
+    const detFloor = Math.floor(this.detective.y / FLOOR_HEIGHT);
+
+    if (thiefFloor >= 99 && thiefFloor <= 100 && this.thief.y >= 99 * FLOOR_HEIGHT - 10) {
+      this.timerSystem.triggerWin('THIEF', 'CIPHER DESCENDED TO FLOOR +1 CENTRAL VAULT FIRST AND ESCAPED WITH THE DIAMOND!');
+    } else if (detFloor <= 100 && detFloor >= 99 && this.detective.y <= 100 * FLOOR_HEIGHT + 35) {
+      this.timerSystem.triggerWin('DETECTIVE', 'VALE ASCENDED TO FLOOR -1 SECURITY HUB FIRST AND SECURED THE BUILDING!');
     }
   }
 
