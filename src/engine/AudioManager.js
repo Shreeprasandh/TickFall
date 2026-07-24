@@ -1,5 +1,7 @@
 // Web Audio API Synthesizer & Procedural E-Minor Pentatonic Music Engine
 
+import { clamp } from '../utils/math.js';
+
 export class AudioManager {
   constructor() {
     this.ctx = null;
@@ -15,11 +17,15 @@ export class AudioManager {
 
     this.soundVolume = 0.8;
     this.musicVolume = 0.7;
-    this.isMuted = false;
+    this.isMuted = true; // Default to muted on initial application load
+    this.track = 'LOBBY'; // 'LOBBY' or 'INGAME'
 
-    // E Minor Pentatonic scale frequencies
-    // E3, G3, A3, B3, D4, E4, G4, A4, B4, D5
-    this.scale = [164.81, 196.00, 220.00, 246.94, 293.66, 329.63, 392.00, 440.00, 493.88, 587.33];
+    // D Minor Ambient Pentatonic Scale (Lobby)
+    this.lobbyScale = [146.83, 174.61, 196.00, 220.00, 261.63, 293.66, 349.23, 440.00];
+
+    // F# Heist Action Scale (In-Game High Tension)
+    this.ingameScale = [185.00, 220.00, 246.94, 277.18, 329.63, 369.99, 440.00, 493.88, 554.37, 659.25];
+
     this.stepIndex = 0;
   }
 
@@ -40,7 +46,8 @@ export class AudioManager {
     this.musicGain = this.ctx.createGain();
     this.sfxGain = this.ctx.createGain();
 
-    this.masterGain.gain.value = 1.0;
+    // Default master gain value is 0.0 (Muted on load until user explicitly unmutes)
+    this.masterGain.gain.value = this.isMuted ? 0.0 : 1.0;
     this.musicGain.gain.value = this.musicVolume;
     this.sfxGain.gain.value = this.soundVolume;
 
@@ -84,18 +91,35 @@ export class AudioManager {
     return impulse;
   }
 
+  startLobbyMusic() {
+    this.track = 'LOBBY';
+    this.startMusic();
+  }
+
+  startInGameMusic() {
+    this.track = 'INGAME';
+    this.startMusic();
+  }
+
   startMusic() {
     this.ensureAudioContext();
-    if (this.isPlayingMusic) return;
+    if (this.isPlayingMusic) {
+      if (this.musicInterval) clearTimeout(this.musicInterval);
+    }
     this.isPlayingMusic = true;
     this.stepIndex = 0;
 
     const tick = () => {
       if (!this.isPlayingMusic) return;
-      this.playProceduralNote();
+      if (this.track === 'LOBBY') {
+        this.playLobbyProceduralNote();
+      } else {
+        this.playInGameProceduralNote();
+      }
 
-      // Dynamic interval according to intensity (BPM 100 -> 160)
-      const currentBpm = this.musicBpm + this.intensity * 50;
+      // Dynamic BPM per track
+      const baseBpm = this.track === 'LOBBY' ? 78 : 124;
+      const currentBpm = baseBpm + (this.track === 'INGAME' ? this.intensity * 46 : 0);
       const intervalMs = (60 / currentBpm) * 250; // 16th notes
       this.musicInterval = setTimeout(tick, intervalMs);
     };
@@ -113,48 +137,94 @@ export class AudioManager {
     this.intensity = clamp(1.0 - percentRemaining, 0, 1);
   }
 
-  playProceduralNote() {
+  playLobbyProceduralNote() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
 
-    // Bass note every 8 steps
-    if (this.stepIndex % 8 === 0) {
+    // Atmospheric low pulse every 16 steps
+    if (this.stepIndex % 16 === 0) {
       const bassOsc = this.ctx.createOscillator();
       const bassGain = this.ctx.createGain();
 
-      const bassFreq = this.intensity > 0.6 ? 82.41 : 41.20; // E2 or E1
-      bassOsc.type = this.intensity > 0.5 ? 'sawtooth' : 'triangle';
-      bassOsc.frequency.setValueAtTime(bassFreq, now);
+      bassOsc.type = 'sine';
+      bassOsc.frequency.setValueAtTime(73.42, now); // D2
 
-      bassGain.gain.setValueAtTime(0.3 * this.musicVolume, now);
-      bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      bassGain.gain.setValueAtTime(0.2 * this.musicVolume, now);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
 
       bassOsc.connect(bassGain);
       bassGain.connect(this.musicGain);
 
       bassOsc.start(now);
-      bassOsc.stop(now + 0.45);
+      bassOsc.stop(now + 1.25);
     }
 
-    // Arpeggiated melody note
-    if (this.stepIndex % 2 === 0 || Math.random() < 0.3 + this.intensity * 0.4) {
+    // Soft Ambient Mystery Chime
+    if (this.stepIndex % 4 === 0 && Math.random() < 0.6) {
       const melOsc = this.ctx.createOscillator();
       const melGain = this.ctx.createGain();
 
-      const scaleIdx = Math.floor(Math.random() * (5 + Math.floor(this.intensity * 5)));
-      const freq = this.scale[scaleIdx] || 220;
+      const scaleIdx = Math.floor(Math.random() * this.lobbyScale.length);
+      const freq = this.lobbyScale[scaleIdx] || 220;
 
       melOsc.type = 'sine';
       melOsc.frequency.setValueAtTime(freq, now);
 
-      melGain.gain.setValueAtTime(0.15 * this.musicVolume, now);
-      melGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      melGain.gain.setValueAtTime(0.12 * this.musicVolume, now);
+      melGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
 
       melOsc.connect(melGain);
       melGain.connect(this.musicGain);
 
       melOsc.start(now);
-      melOsc.stop(now + 0.25);
+      melOsc.stop(now + 0.65);
+    }
+
+    this.stepIndex = (this.stepIndex + 1) % 32;
+  }
+
+  playInGameProceduralNote() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // High-Tension Bass Pulse every 8 steps
+    if (this.stepIndex % 8 === 0) {
+      const bassOsc = this.ctx.createOscillator();
+      const bassGain = this.ctx.createGain();
+
+      const bassFreq = this.intensity > 0.6 ? 92.50 : 46.25; // F#2 or F#1
+      bassOsc.type = this.intensity > 0.4 ? 'sawtooth' : 'triangle';
+      bassOsc.frequency.setValueAtTime(bassFreq, now);
+
+      bassGain.gain.setValueAtTime(0.35 * this.musicVolume, now);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      bassOsc.connect(bassGain);
+      bassGain.connect(this.musicGain);
+
+      bassOsc.start(now);
+      bassOsc.stop(now + 0.4);
+    }
+
+    // Rapid Heist Arpeggiated Melody
+    if (this.stepIndex % 2 === 0 || Math.random() < 0.4 + this.intensity * 0.4) {
+      const melOsc = this.ctx.createOscillator();
+      const melGain = this.ctx.createGain();
+
+      const scaleIdx = Math.floor(Math.random() * (4 + Math.floor(this.intensity * 6)));
+      const freq = this.ingameScale[scaleIdx] || 369.99;
+
+      melOsc.type = this.intensity > 0.5 ? 'triangle' : 'sine';
+      melOsc.frequency.setValueAtTime(freq, now);
+
+      melGain.gain.setValueAtTime(0.18 * this.musicVolume, now);
+      melGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+      melOsc.connect(melGain);
+      melGain.connect(this.musicGain);
+
+      melOsc.start(now);
+      melOsc.stop(now + 0.2);
     }
 
     this.stepIndex = (this.stepIndex + 1) % 16;

@@ -37,8 +37,9 @@ export class GameEngine {
     this.botAI = null;
 
     this.buildingFloors = [];
-    this.lastTime = 0;
-    this.isRunning = false;
+    this.isPaused = false;
+    this.p1Paused = false; // Thief / P1 Pause State
+    this.p2Paused = false; // Detective / P2 Pause State
 
     this.initEvents();
   }
@@ -50,11 +51,87 @@ export class GameEngine {
       this.renderer.addFloatingText(sign, 220, 200, color, 'both');
     });
 
+    events.on('timer:modify', (data) => {
+      if (this.timerSystem) {
+        this.timerSystem.modifyTime(data.delta, data.source || 'Event');
+      }
+    });
+
+    events.on('bomb:defused_success', () => {
+      if (this.detective) this.detective.bombDiffused = true;
+      if (this.timerSystem) this.timerSystem.diffuseBomb();
+      this.renderer.addFloatingText('BOMB DEFUSED! +45s', 220, 200, '#00E676', 'both');
+    });
+
     events.on('game:over', (data) => {
       this.gameState = GAME_STATES.RESULTS;
       audioManager.stopMusic();
       StorageManager.recordMatchResult(data.winner, this.timerSystem.elapsedSeconds, this.thief.chips + this.detective.chips);
     });
+
+    events.on('input:pause', (data) => {
+      this.togglePause(data?.role || ROLES.THIEF);
+    });
+  }
+
+  isGamePaused() {
+    if (this.mode === 'SOLO') return this.isPaused;
+    return this.p1Paused || this.p2Paused;
+  }
+
+  pause(playerRole = ROLES.THIEF) {
+    if (this.gameState !== GAME_STATES.PLAYING) return;
+    if (this.mode === 'SOLO') {
+      this.isPaused = true;
+    } else {
+      if (playerRole === ROLES.THIEF) this.p1Paused = true;
+      else if (playerRole === ROLES.DETECTIVE) this.p2Paused = true;
+      else {
+        this.p1Paused = true;
+        this.p2Paused = true;
+      }
+    }
+    if (this.timerSystem) this.timerSystem.isPaused = this.isGamePaused();
+    events.emit('game:paused', {
+      mode: this.mode,
+      p1Paused: this.p1Paused,
+      p2Paused: this.p2Paused,
+      isPaused: this.isGamePaused()
+    });
+  }
+
+  unpausePlayer(playerRole = ROLES.THIEF) {
+    if (this.gameState !== GAME_STATES.PLAYING) return;
+    if (this.mode === 'SOLO') {
+      this.isPaused = false;
+    } else {
+      if (playerRole === ROLES.THIEF) this.p1Paused = false;
+      if (playerRole === ROLES.DETECTIVE) this.p2Paused = false;
+    }
+    const currentlyPaused = this.isGamePaused();
+    if (this.timerSystem) this.timerSystem.isPaused = currentlyPaused;
+    events.emit('game:unpaused', {
+      mode: this.mode,
+      p1Paused: this.p1Paused,
+      p2Paused: this.p2Paused,
+      isPaused: currentlyPaused
+    });
+  }
+
+  togglePause(playerRole = ROLES.THIEF) {
+    const isPlayerCurrentlyPaused = this.mode === 'SOLO' ? this.isPaused : (playerRole === ROLES.THIEF ? this.p1Paused : this.p2Paused);
+    if (isPlayerCurrentlyPaused) {
+      this.unpausePlayer(playerRole);
+    } else {
+      this.pause(playerRole);
+    }
+  }
+
+  resetPauseState() {
+    this.isPaused = false;
+    this.p1Paused = false;
+    this.p2Paused = false;
+    if (this.timerSystem) this.timerSystem.isPaused = false;
   }
 
   startSoloGame(playerRole = ROLES.THIEF, difficulty = 'MEDIUM', timeFrameKey = 'STANDARD') {
@@ -70,9 +147,10 @@ export class GameEngine {
     this.thief.reset();
     this.detective.reset();
     this.timerSystem.reset(timeFrameKey);
+    this.resetPauseState();
 
     this.gameState = GAME_STATES.PLAYING;
-    audioManager.startMusic();
+    audioManager.startInGameMusic();
 
     if (!this.isRunning) {
       this.isRunning = true;
@@ -91,9 +169,10 @@ export class GameEngine {
     this.thief.reset();
     this.detective.reset();
     this.timerSystem.reset(timeFrameKey);
+    this.resetPauseState();
 
     this.gameState = GAME_STATES.PLAYING;
-    audioManager.startMusic();
+    audioManager.startInGameMusic();
 
     if (!this.isRunning) {
       this.isRunning = true;
@@ -109,7 +188,9 @@ export class GameEngine {
     this.lastTime = currentTime;
 
     if (this.gameState === GAME_STATES.PLAYING) {
-      this.update(dt);
+      if (!this.isGamePaused()) {
+        this.update(dt);
+      }
       this.render();
     }
 

@@ -69,16 +69,26 @@ export class UIManager {
     }
   }
 
+  updateAllMuteIcons(isMuted) {
+    document.querySelectorAll('.btn-mute-toggle, #btnMuteAudio, #btnMuteAudioClock').forEach(btn => {
+      btn.classList.toggle('muted', isMuted);
+      this.updateMuteIcon(btn, isMuted);
+    });
+  }
+
   bindEvents() {
-    // Audio Mute Toggle Button
-    const muteBtn = document.getElementById('btnMuteAudio');
-    if (muteBtn) {
-      muteBtn.onclick = () => {
+    // Initial Audio Mute Icon Sync Across All Buttons (Default Muted)
+    this.updateAllMuteIcons(audioManager.isMuted);
+
+    // Global Event Delegation for all Mute Toggle Buttons
+    document.addEventListener('click', (e) => {
+      const muteBtn = e.target.closest('.btn-mute-toggle, #btnMuteAudio, #btnMuteAudioClock');
+      if (muteBtn) {
+        e.stopPropagation();
         const isMuted = audioManager.toggleMute();
-        muteBtn.classList.toggle('muted', isMuted);
-        this.updateMuteIcon(muteBtn, isMuted);
-      };
-    }
+        this.updateAllMuteIcons(isMuted);
+      }
+    });
 
     // Modal Triggers
     const btnInfo = document.getElementById('btnOpenInfo');
@@ -219,6 +229,75 @@ export class UIManager {
       };
     }
 
+    // Pause System Event Handling
+    events.on('game:paused', (data) => this.handlePauseUpdate(data));
+    events.on('game:unpaused', (data) => this.handlePauseUpdate(data));
+
+    // Pause Control Buttons
+    const btnPauseClock = document.getElementById('btnPauseGameClock');
+    if (btnPauseClock) {
+      btnPauseClock.onclick = (e) => {
+        e.stopPropagation();
+        this.safePlay(() => audioManager.playClick());
+        if (window.gameEngine) window.gameEngine.togglePause(ROLES.THIEF);
+      };
+    }
+
+    const btnResume = document.getElementById('btnResumeGame');
+    if (btnResume) {
+      btnResume.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        if (window.gameEngine) {
+          if (window.gameEngine.mode === 'SOLO') {
+            window.gameEngine.unpausePlayer(ROLES.THIEF);
+          } else {
+            window.gameEngine.unpausePlayer(ROLES.THIEF);
+            window.gameEngine.unpausePlayer(ROLES.DETECTIVE);
+          }
+        }
+      };
+    }
+
+    const btnP1Unpause = document.getElementById('btnP1Unpause');
+    if (btnP1Unpause) {
+      btnP1Unpause.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        if (window.gameEngine) window.gameEngine.unpausePlayer(ROLES.THIEF);
+      };
+    }
+
+    const btnP2Unpause = document.getElementById('btnP2Unpause');
+    if (btnP2Unpause) {
+      btnP2Unpause.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        if (window.gameEngine) window.gameEngine.unpausePlayer(ROLES.DETECTIVE);
+      };
+    }
+
+    const btnRestart = document.getElementById('btnRestartGame');
+    if (btnRestart) {
+      btnRestart.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        this.closeModal('pauseModal');
+        if (window.gameEngine) {
+          if (window.gameEngine.mode === 'SOLO') {
+            window.gameEngine.startSoloGame(this.selectedRole, this.selectedDifficulty, this.selectedTimeFrame);
+          } else {
+            window.gameEngine.startMultiplayerGame(this.selectedTimeFrame);
+          }
+        }
+      };
+    }
+
+    const btnQuit = document.getElementById('btnQuitToMenu');
+    if (btnQuit) {
+      btnQuit.onclick = () => {
+        this.safePlay(() => audioManager.playClick());
+        this.closeModal('pauseModal');
+        this.switchScreen(GAME_STATES.HOME);
+      };
+    }
+
     // Results Play Again
     const btnAgain = document.getElementById('btnPlayAgain');
     if (btnAgain) {
@@ -263,6 +342,58 @@ export class UIManager {
     if (modal) {
       modal.style.display = 'none';
       modal.classList.add('hidden');
+    }
+  }
+
+  handlePauseUpdate(data) {
+    if (!data.isPaused) {
+      this.closeModal('pauseModal');
+      return;
+    }
+
+    this.openModal('pauseModal');
+
+    const titleEl = document.getElementById('pauseTitle');
+    const subtitleEl = document.getElementById('pauseSubtitle');
+    const soloNotice = document.getElementById('soloPauseNotice');
+    const mpPanel = document.getElementById('multiplayerPausePanel');
+    const statusText = document.getElementById('pauseLiveStatus');
+
+    const p1Badge = document.getElementById('p1StatusBadge');
+    const p2Badge = document.getElementById('p2StatusBadge');
+
+    if (data.mode === 'SOLO') {
+      if (titleEl) titleEl.innerText = '⏸️ MISSION SUSPENDED';
+      if (subtitleEl) subtitleEl.innerText = 'SOLO GAME PLAY PAUSED';
+      if (soloNotice) soloNotice.classList.remove('hidden');
+      if (mpPanel) mpPanel.classList.add('hidden');
+      if (statusText) statusText.innerText = 'PRESS P, ESC, OR RESUME TO CONTINUE.';
+    } else {
+      if (titleEl) titleEl.innerText = '⏸️ DUAL-PLAYER PAUSE LOCK';
+      if (subtitleEl) subtitleEl.innerText = 'BOTH OPERATIVES MUST UNPAUSE TO RESUME LIVE GAMEPLAY';
+      if (soloNotice) soloNotice.classList.add('hidden');
+      if (mpPanel) mpPanel.classList.remove('hidden');
+
+      if (p1Badge) {
+        p1Badge.innerText = data.p1Paused ? 'PAUSED ⏸️' : 'READY ✅';
+        p1Badge.className = data.p1Paused ? 'status-badge state-paused' : 'status-badge state-ready';
+      }
+      if (p2Badge) {
+        p2Badge.innerText = data.p2Paused ? 'PAUSED ⏸️' : 'READY ✅';
+        p2Badge.className = data.p2Paused ? 'status-badge state-paused' : 'status-badge state-ready';
+      }
+
+      if (statusText) {
+        if (data.p1Paused && data.p2Paused) {
+          statusText.innerText = 'BOTH PLAYERS ARE PAUSED. CLICK READY TO UNPAUSE.';
+        } else if (data.p1Paused) {
+          statusText.innerText = 'CIPHER IS PAUSED. WAITING FOR CIPHER TO UNPAUSE...';
+        } else if (data.p2Paused) {
+          statusText.innerText = 'VALE IS PAUSED. WAITING FOR VALE TO UNPAUSE...';
+        } else {
+          statusText.innerText = 'BOTH OPERATIVES READY — RESUMING GAMEPLAY...';
+        }
+      }
     }
   }
 
@@ -320,6 +451,7 @@ export class UIManager {
     switch (screenState) {
       case GAME_STATES.HOME:
         this.homeScreen?.classList.remove('hidden');
+        audioManager.startLobbyMusic();
         break;
       case GAME_STATES.SOLO_SETUP:
         this.soloSetupScreen?.classList.remove('hidden');

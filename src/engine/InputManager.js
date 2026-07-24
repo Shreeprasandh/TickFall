@@ -1,5 +1,8 @@
 // Unified Input Manager for Keyboard, Touch Controls & Virtual Gamepad
 
+import { events } from '../utils/events.js';
+import { ROLES } from '../utils/constants.js';
+
 export class InputManager {
   constructor() {
     this.keys = {};
@@ -16,6 +19,15 @@ export class InputManager {
 
   initKeyboard() {
     window.addEventListener('keydown', (e) => {
+      // Avoid duplicate triggers on key repeat
+      if (e.repeat) return;
+
+      if (e.code === 'KeyP' || e.code === 'Escape') {
+        events.emit('input:pause', { role: ROLES.THIEF });
+      } else if (e.code === 'KeyO' || e.code === 'Numpad0') {
+        events.emit('input:pause', { role: ROLES.DETECTIVE });
+      }
+
       this.keys[e.code] = true;
     });
 

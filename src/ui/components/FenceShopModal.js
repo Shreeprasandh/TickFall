@@ -89,7 +89,7 @@ export class FenceShopModal {
       audioManager.playCoin();
 
       if (itemId === 'jammer') {
-        events.emit('timer:changed', { delta: -8, remaining: 0, source: 'Signal Jammer' });
+        events.emit('timer:modify', { delta: -8, source: 'Signal Jammer' });
       } else if (itemId === 'heal') {
         player.hp = Math.min(3, player.hp + 1);
       }

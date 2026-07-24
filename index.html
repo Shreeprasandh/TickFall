@@ -80,11 +80,11 @@
 
       <!-- Top-Right Controls -->
       <div class="top-right-controls">
-        <button id="btnMuteAudio" class="icon-control-btn" aria-label="Mute Audio">
-          <svg id="iconVolume" class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        <button id="btnMuteAudio" class="icon-control-btn btn-mute-toggle muted" aria-label="Mute Audio">
+          <svg class="control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23" stroke-width="2"></line>
+            <path d="M9 9v6h2l5 4V5L11 9H9z"></path>
+            <path d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
           </svg>
         </button>
         <button id="btnOpenInfo" class="icon-control-btn" onclick="window.openModal('infoModal')" aria-label="Game Info">
@@ -485,8 +485,46 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn btn-primary modal-close-btn" data-modal="leaderboardModal" onclick="window.closeModal('leaderboardModal')">CLOSE</button>
+  <!-- IN-RUN PAUSE MENU MODAL (DUAL-UNPAUSE LOCK FOR MULTIPLAYER) -->
+  <div id="pauseModal" class="modal-overlay hidden" style="display: none;">
+    <div class="modal-card pause-card">
+      <div class="modal-header">
+        <h2 id="pauseTitle">⏸️ MISSION SUSPENDED</h2>
+        <span class="modal-subtitle" id="pauseSubtitle">GAME PLAY PAUSED</span>
+      </div>
+
+      <div class="spacious-content">
+        <!-- Solo Pause Status Message -->
+        <div id="soloPauseNotice" class="pause-notice-block">
+          <p>Press <strong>P</strong>, <strong>ESC</strong>, or <strong>RESUME MISSION</strong> to resume gameplay.</p>
+        </div>
+
+        <!-- Multiplayer Dual-Unpause Lock Panel -->
+        <div id="multiplayerPausePanel" class="multiplayer-pause-grid hidden">
+          <div class="player-pause-box" id="p1PauseBox">
+            <div class="box-header">
+              <span class="badge-role">CIPHER (P1)</span>
+              <span class="status-badge state-paused" id="p1StatusBadge">PAUSED ⏸️</span>
+            </div>
+            <button id="btnP1Unpause" class="btn btn-secondary btn-unpause-p1">CIPHER READY / UNPAUSE</button>
+          </div>
+
+          <div class="player-pause-box" id="p2PauseBox">
+            <div class="box-header">
+              <span class="badge-role gold">VALE (P2)</span>
+              <span class="status-badge state-paused" id="p2StatusBadge">PAUSED ⏸️</span>
+            </div>
+            <button id="btnP2Unpause" class="btn btn-secondary btn-unpause-p2">VALE READY / UNPAUSE</button>
+          </div>
+        </div>
+
+        <div class="pause-live-status" id="pauseLiveStatus">BOTH PLAYERS MUST UNPAUSE TO RESUME LIVE GAMEPLAY.</div>
+      </div>
+
+      <div class="modal-footer pause-footer">
+        <button id="btnResumeGame" class="btn btn-primary">RESUME MISSION</button>
+        <button id="btnRestartGame" class="btn btn-secondary">RESTART MATCH</button>
+        <button id="btnQuitToMenu" class="btn btn-back">QUIT TO MENU</button>
       </div>
     </div>
   </div>

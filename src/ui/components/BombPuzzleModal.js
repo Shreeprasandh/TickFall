@@ -105,7 +105,7 @@ export class BombPuzzleModal {
     if (color !== expectedColor) {
       // Wrong wire!
       audioManager.playAlarm();
-      events.emit('timer:changed', { delta: -8, remaining: 0, source: 'Wrong Wire Cut' });
+      events.emit('timer:modify', { delta: -8, source: 'Wrong Wire Cut' });
       this.close();
       return;
     }
@@ -114,7 +114,6 @@ export class BombPuzzleModal {
       // Success! Bomb Diffused
       audioManager.playCoin();
       events.emit('bomb:defused_success');
-      events.emit('timer:diffused');
       this.close();
     }
   }
@@ -129,7 +128,7 @@ export class BombPuzzleModal {
 
       if (this.timeLeft <= 0) {
         clearInterval(this.timerInterval);
-        events.emit('timer:changed', { delta: -8, remaining: 0, source: 'Bomb Puzzle Timeout' });
+        events.emit('timer:modify', { delta: -8, source: 'Bomb Puzzle Timeout' });
         this.close();
       }
     }, 100);
